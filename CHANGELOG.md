@@ -7,6 +7,42 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.2.0] — 2026-09-07
+
+Video coverage completed for the warm-up; recovery intervals deliberately left without it.
+
+### Added
+
+- **Warm-up clips.** All four warm-up segments now show real footage, located by stepping through
+  the source video's opening two and a half minutes.
+
+### Changed
+
+- **Warm-up reshaped to match available footage**, the same way the cool-down was in 1.1.0. The
+  source video is continuous cardio and contains no mobility warm-up, so "Shoulder Rolls & Arm
+  Circles", "Heel-Toe Rocks", and "Gentle Torso Twists" are replaced by "Easy Walk in Place",
+  "Arm Raises — Forward and Up", and "Heel Digs" — all of which it does demonstrate. Duration
+  unchanged at 2 minutes.
+- **Recovery intervals no longer show video.** The 15-second marches between exercises collapse the
+  panel instead. It is a rest that does not need demonstrating, and reloading the player between
+  every exercise is churn.
+
+### Fixed
+
+- **Captions came back on some clips.** The captions module reloads asynchronously after
+  `loadVideoById`, so the single call at load time was regularly too early. It is now retried
+  across the re-initialisation window and again whenever playback starts, and `setOption` is used
+  alongside `unloadModule` since the latter alone does not always stick.
+- The "Arm Raises" cue described both arms moving together; the footage shows an alternating
+  single-arm reach. Cue corrected to match.
+
+### Notes
+
+- 26 of 43 segments carry a clip. The other 17 are the 16 recovery marches and the water break,
+  all intentionally without video.
+
+---
+
 ## [1.1.0] — 2026-09-07
 
 Exercise demonstrations are now real video instead of drawn figures.

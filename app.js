@@ -38,16 +38,19 @@
 
   /* ---- YouTube clips -------------------------------------------------
      One source video, seeked to a different 10s window per exercise.
-     [startSeconds, endSeconds]. The march window doubles as the visual
-     for every recovery interval and for the two marching segments in the
-     warm-up and cool-down. Segments with no clip show no video panel;
-     the name and cue carry those on their own. */
+     [startSeconds, endSeconds]. Windows were located by stepping through
+     the source video frame by frame. Segments with no clip show no video
+     panel; the name and cue carry those on their own. */
   var VIDEO_ID = 'HP_P-A3crw4';
   var MARCH_CLIP = [58, 68];
 
   /* Cool-down windows, located by stepping through the source video's own
      stretching block. The clip demonstrates the movement; the cue names the
      side, which will not always match the side she is on screen. */
+  var WALK_CLIP = [137, 147];      // the stepping half of the "straight walk" block
+  var ARMS_CLIP = [152, 162];      // arm raises, "forward and up"
+  var HEEL_CLIP = [180, 190];      // same heel digs used later as exercise 7
+
   var QUAD_CLIP = [1236, 1246];
   var CALF_R_CLIP = [1250, 1260];
   var CALF_L_CLIP = [1264, 1274];
@@ -67,12 +70,12 @@
   var WARMUP = [
     { name: 'March in Place', clip: MARCH_CLIP,
       cue: 'Easy pace. Let your arms swing naturally.' },
-    { name: 'Shoulder Rolls & Arm Circles',
-      cue: 'Roll your shoulders back five times, then small circles forward.' },
-    { name: 'Heel-Toe Rocks',
-      cue: 'Rock onto your heels, then onto your toes. Hold a chair if you like.' },
-    { name: 'Gentle Torso Twists',
-      cue: 'Soft knees. Turn your shoulders side to side, arms loose.' }
+    { name: 'Easy Walk in Place', clip: WALK_CLIP,
+      cue: 'Small steps, staying light. Loosen up the legs.' },
+    { name: 'Arm Raises — Forward and Up', clip: ARMS_CLIP,
+      cue: 'Reach one arm forward and up, then the other. Shoulders relaxed.' },
+    { name: 'Heel Digs', clip: HEEL_CLIP,
+      cue: 'Tap one heel forward, then the other. Gentle — this is a warm-up.' }
   ];
 
   var COOLDOWN = [
@@ -90,7 +93,10 @@
       cue: 'One heel forward, toes up, hinge at the hips. Gentle.' }
   ];
 
-  var RECOVER = { name: 'March in Place', clip: MARCH_CLIP,
+  /* No clip during recovery on purpose. It is 15 seconds of marching she does
+     not need shown, and reloading the player between every exercise is churn.
+     The panel collapses and "Next up" carries the interval instead. */
+  var RECOVER = { name: 'March in Place', clip: null,
                   cue: 'Keep moving. Easy pace, shake it out.' };
   var BREAK   = { name: 'Water Break',
                   cue: 'Take a drink. Catch your breath.' };
@@ -360,6 +366,7 @@
             refreshVisual();
           },
           onStateChange: function (e) {
+            if (e.data === window.YT.PlayerState.PLAYING) killCaptionsOnce();
             // Backstop only; the poll below normally loops before ENDED fires.
             if (e.data === window.YT.PlayerState.ENDED && yt.clip) {
               seekClipStart();
@@ -376,10 +383,26 @@
      load, so unload the module every time rather than trusting the
      cc_load_policy player var, which a viewer's global caption setting
      overrides. Both module names are tried; which one applies varies. */
-  function killCaptions() {
+  var captionKillTimers = [];
+
+  function killCaptionsOnce() {
     if (!yt.player) return;
     ['captions', 'cc'].forEach(function (m) {
       try { yt.player.unloadModule(m); } catch (e) {}
+      // Belt and braces: on some player builds unloadModule alone is undone
+      // when the module re-initialises, but clearing the track sticks.
+      try { yt.player.setOption(m, 'track', {}); } catch (e) {}
+    });
+  }
+
+  /* The captions module reloads asynchronously after loadVideoById, so a
+     single call at load time is regularly too early and the subtitles come
+     back a second later. Retry across the window in which it re-initialises. */
+  function killCaptions() {
+    killCaptionsOnce();
+    captionKillTimers.forEach(clearTimeout);
+    captionKillTimers = [300, 800, 1500, 2500, 4000].map(function (ms) {
+      return setTimeout(killCaptionsOnce, ms);
     });
   }
 

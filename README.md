@@ -69,10 +69,12 @@ the total duration are all derived from them.
 
 Each exercise shows a short looping clip of the movement, muted, pulled from a single source video
 via the YouTube IFrame API. The clip is seeked to that exercise's window and looped for the whole
-interval. The march clip doubles as the visual for every recovery period.
+interval.
 
-39 of the 43 segments have a clip. The three warm-up mobility moves (shoulder rolls, heel-toe
-rocks, torso twists) and the water break are text-only — the source video has no matching footage.
+Every warm-up, exercise, and cool-down segment has a clip — 26 of the 43 segments. The 15-second
+recovery marches and the water break deliberately show no video: it is a rest she does not need
+demonstrated, and reloading the player between every exercise is churn. Those segments collapse the
+panel and lean on the name, cue, and "Next up" preview instead.
 
 Clips are defined at the top of `app.js`:
 
@@ -83,9 +85,13 @@ var CLIPS = { 'half-jacks': [628, 638], ... };   // [startSeconds, endSeconds]
 
 To retime a clip or point at a different video, edit those values. Nothing else needs to change.
 
-**The cool-down stretches were matched to the source footage**, so the clip shows the movement the
-cue describes. One caveat: the leg she demonstrates on screen will not always be the side the cue
-names. The cue is authoritative.
+**The warm-up and cool-down were both matched to the source footage**, so each clip shows the
+movement its cue describes. They were originally written independently of the video and have been
+reshaped to fit what it actually demonstrates.
+
+Two caveats. The leg she demonstrates on screen will not always be the side the cue names — the cue
+is authoritative. And the warm-up clips were identified by stepping through the video frame by
+frame, so give them a quick look before she uses this in earnest.
 
 **Video is decoration, never a dependency.** If the API fails to load, the device is offline, or
 embedding is disabled on the video, the panel falls back to a local loop from `media/` if one
