@@ -1,12 +1,13 @@
 # Cardio Routine
 
-A guided workout timer built for a 65-year-old: large type, high contrast, spoken cues, and big
-buttons that work at arm's length in a living room.
+A guided workout timer built for a 65-year-old: large type, high contrast, spoken cues, looping
+video demonstrations, and big buttons that work at arm's length in a living room.
 
 **22 minutes** — 2 min warm-up · 2 rounds of 8 exercises (45s work / 15s march) · 1 min water
 break · 3 min cool-down.
 
-No build step, no dependencies, no npm. Three files and a folder.
+No build step, no bundler, no npm. Four files and a folder. The only external dependency is the
+YouTube IFrame API, loaded at runtime and non-fatal if it fails.
 
 ---
 
@@ -50,8 +51,8 @@ no trace.
 ## Files
 
 ```
-index.html    markup: 3 screens, 2 panels, the stick-figure SVG
-styles.css    palette, layout, orientation handling, figure animations
+index.html    markup: 3 screens, 2 panels, the video panel
+styles.css    palette, layout, orientation handling
 config.js     stays blank — sync config lives on the device, not the repo
 app.js        data, timeline, timer, audio, wake lock, storage, sync
 media/        optional exercise loops — see media/README.md
@@ -66,8 +67,36 @@ the total duration are all derived from them.
 
 ## Exercise videos
 
-Ships with an animated stick figure per exercise. Drop a loop into `media/` and it takes over for
-that exercise; anything missing keeps its figure. See `media/README.md`.
+Each exercise shows a short looping clip of the movement, muted, pulled from a single source video
+via the YouTube IFrame API. The clip is seeked to that exercise's window and looped for the whole
+interval. The march clip doubles as the visual for every recovery period.
+
+39 of the 43 segments have a clip. The three warm-up mobility moves (shoulder rolls, heel-toe
+rocks, torso twists) and the water break are text-only — the source video has no matching footage.
+
+Clips are defined at the top of `app.js`:
+
+```js
+var VIDEO_ID = 'HP_P-A3crw4';
+var CLIPS = { 'half-jacks': [628, 638], ... };   // [startSeconds, endSeconds]
+```
+
+To retime a clip or point at a different video, edit those values. Nothing else needs to change.
+
+**The cool-down stretches were matched to the source footage**, so the clip shows the movement the
+cue describes. One caveat: the leg she demonstrates on screen will not always be the side the cue
+names. The cue is authoritative.
+
+**Video is decoration, never a dependency.** If the API fails to load, the device is offline, or
+embedding is disabled on the video, the panel falls back to a local loop from `media/` if one
+exists and otherwise collapses — the timer, audio cues, and history all run exactly the same. The
+player is also hidden while paused, because a paused YouTube frame fills with its own title bar,
+play button, and suggested-video thumbnails.
+
+### Local loops
+
+`media/` still works as an offline fallback. Drop in `half-jacks.webp` and it is used whenever the
+video is unavailable. See `media/README.md`. The folder ships empty.
 
 ## Google Sheets sync
 
@@ -101,4 +130,8 @@ with retry. It runs identically with the wifi off.
   itself.
 - **Timing is clock-based**, not tick-counted, so backgrounding the tab mid-workout and coming
   back doesn't leave the timer minutes behind.
-- **`prefers-reduced-motion`** stops the figure animations. The countdown still runs.
+- **Ads.** Embedded YouTube can serve ads, which would replace the clip mid-interval. The timer
+  and audio cues keep running correctly. There is no player parameter that prevents this; the
+  `media/` loops avoid it entirely if it becomes a problem.
+- **Captions are force-disabled** on every clip load, since they render over the bottom of the
+  frame and reappear each time a video is loaded.

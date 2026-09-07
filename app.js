@@ -16,62 +16,83 @@
   var COOLDOWN_SECONDS = 30;
 
   var EXERCISES = [
-    { id: 'march-reach',   figure: 'marchReach',
-      name: 'Brisk March with High Arm Reaches',
+    { id: 'march-reach',   name: 'Brisk March with High Arm Reaches',
       cue: 'March in place, lifting your knees. Reach one arm overhead each step.' },
-    { id: 'side-step-taps', figure: 'stepSide',
+    { id: 'side-step-taps',
       name: 'Side Step-Taps with Pushes',
       cue: 'Step right, tap the left toe in. Push both hands forward at chest height. Alternate.' },
-    { id: 'half-jacks',     figure: 'armsUp',
-      name: 'Half-Jacks',
+    { id: 'half-jacks',     name: 'Half-Jacks',
       cue: 'Step one foot out to the side as your arms sweep up. Return. No jumping.' },
-    { id: 'knee-taps',      figure: 'kneeLift',
-      name: 'Cross-Body Knee Taps',
+    { id: 'knee-taps',      name: 'Cross-Body Knee Taps',
       cue: 'Lift the right knee, tap it with your left hand. Alternate sides.' },
-    { id: 'skater-taps',    figure: 'skater',
-      name: 'Skater Taps',
+    { id: 'skater-taps',    name: 'Skater Taps',
       cue: 'Step wide to one side, tap the back toe behind you, swing your arms across.' },
-    { id: 'shadow-boxing',  figure: 'punch',
-      name: 'Shadow Boxing',
+    { id: 'shadow-boxing',  name: 'Shadow Boxing',
       cue: 'Light, quick feet. Punch straight ahead, alternating hands.' },
-    { id: 'heel-digs',      figure: 'heelDig',
-      name: 'Heel Digs with Bicep Swings',
+    { id: 'heel-digs',      name: 'Heel Digs with Bicep Swings',
       cue: 'Tap one heel forward on the floor and curl both arms up. Alternate heels.' },
-    { id: 'fast-feet',      figure: 'reach',
-      name: 'Fast-Feet Shuffles to Soft Reach',
+    { id: 'fast-feet',      name: 'Fast-Feet Shuffles to Soft Reach',
       cue: 'Quick small steps in place, then reach both arms up high. Repeat.' }
   ];
   EXERCISES.forEach(function (e) { e.media = 'media/' + e.id + '.webp'; });
 
+  /* ---- YouTube clips -------------------------------------------------
+     One source video, seeked to a different 10s window per exercise.
+     [startSeconds, endSeconds]. The march window doubles as the visual
+     for every recovery interval and for the two marching segments in the
+     warm-up and cool-down. Segments with no clip show no video panel;
+     the name and cue carry those on their own. */
+  var VIDEO_ID = 'HP_P-A3crw4';
+  var MARCH_CLIP = [58, 68];
+
+  /* Cool-down windows, located by stepping through the source video's own
+     stretching block. The clip demonstrates the movement; the cue names the
+     side, which will not always match the side she is on screen. */
+  var QUAD_CLIP = [1236, 1246];
+  var CALF_R_CLIP = [1250, 1260];
+  var CALF_L_CLIP = [1264, 1274];
+  var HAMSTRING_CLIP = [1291, 1301];
+  var CLIPS = {
+    'march-reach':    [58, 68],
+    'side-step-taps': [299, 309],
+    'half-jacks':     [628, 638],
+    'knee-taps':      [269, 279],
+    'skater-taps':    [809, 819],
+    'shadow-boxing':  [28, 38],
+    'heel-digs':      [180, 190],
+    'fast-feet':      [868, 878]
+  };
+  EXERCISES.forEach(function (e) { e.clip = CLIPS[e.id] || null; });
+
   var WARMUP = [
-    { name: 'March in Place', figure: 'march',
+    { name: 'March in Place', clip: MARCH_CLIP,
       cue: 'Easy pace. Let your arms swing naturally.' },
-    { name: 'Shoulder Rolls & Arm Circles', figure: 'shoulders',
+    { name: 'Shoulder Rolls & Arm Circles',
       cue: 'Roll your shoulders back five times, then small circles forward.' },
-    { name: 'Heel-Toe Rocks', figure: 'heelDig',
+    { name: 'Heel-Toe Rocks',
       cue: 'Rock onto your heels, then onto your toes. Hold a chair if you like.' },
-    { name: 'Gentle Torso Twists', figure: 'twist',
+    { name: 'Gentle Torso Twists',
       cue: 'Soft knees. Turn your shoulders side to side, arms loose.' }
   ];
 
   var COOLDOWN = [
-    { name: 'Slow March with Deep Breathing', figure: 'march',
+    { name: 'Slow March with Deep Breathing', clip: MARCH_CLIP,
       cue: 'In through the nose, out through the mouth.' },
-    { name: 'Standing Quad Stretch — Right', figure: 'quad',
+    { name: 'Standing Quad Stretch — Right', clip: QUAD_CLIP,
       cue: 'Hold a chair. Pull your right heel gently toward you.' },
-    { name: 'Standing Quad Stretch — Left', figure: 'quad',
+    { name: 'Standing Quad Stretch — Left', clip: QUAD_CLIP,
       cue: 'Same on the other side. Stand tall.' },
-    { name: 'Standing Hamstring Reach', figure: 'hinge',
-      cue: 'One heel forward, toes up, hinge at the hips. Gentle.' },
-    { name: 'Chest & Shoulder Opener', figure: 'stretch',
-      cue: 'Clasp your hands behind your back and lift your chest.' },
-    { name: 'Overhead Reach & Side Bend', figure: 'sideBend',
-      cue: 'Reach up, lean gently to one side, then the other.' }
+    { name: 'Calf Stretch — Right', clip: CALF_R_CLIP,
+      cue: 'Step the right foot back, heel down, front knee soft.' },
+    { name: 'Calf Stretch — Left', clip: CALF_L_CLIP,
+      cue: 'Switch. Left foot back, heel pressing into the floor.' },
+    { name: 'Standing Hamstring Reach', clip: HAMSTRING_CLIP,
+      cue: 'One heel forward, toes up, hinge at the hips. Gentle.' }
   ];
 
-  var RECOVER = { name: 'March in Place', figure: 'march',
+  var RECOVER = { name: 'March in Place', clip: MARCH_CLIP,
                   cue: 'Keep moving. Easy pace, shake it out.' };
-  var BREAK   = { name: 'Water Break', figure: 'stretch',
+  var BREAK   = { name: 'Water Break',
                   cue: 'Take a drink. Catch your breath.' };
 
   var DEFAULTS = { work: 45, rest: 15, waterBreak: 60, beeps: true, voice: true };
@@ -126,29 +147,28 @@
     var t = [];
 
     WARMUP.forEach(function (w, i) {
-      t.push({ kind: 'warmup', name: w.name, cue: w.cue, figure: w.figure,
-               media: null, seconds: WARMUP_SECONDS,
+      t.push({ kind: 'warmup', name: w.name, cue: w.cue,
+               media: null, clip: w.clip || null, seconds: WARMUP_SECONDS,
                label: 'Warm-up · ' + (i + 1) + ' of ' + WARMUP.length });
     });
 
     for (var r = 1; r <= ROUNDS; r++) {
       EXERCISES.forEach(function (ex, i) {
-        t.push({ kind: 'work', name: ex.name, cue: ex.cue, figure: ex.figure,
-                 media: ex.media, seconds: s.work,
+        t.push({ kind: 'work', name: ex.name, cue: ex.cue,
+                 media: ex.media, clip: ex.clip, seconds: s.work,
                  label: 'Round ' + r + ' · ' + (i + 1) + ' of ' + EXERCISES.length });
-        t.push({ kind: 'recover', name: RECOVER.name, cue: RECOVER.cue,
-                 figure: RECOVER.figure, media: null, seconds: s.rest,
+        t.push({ kind: 'recover', name: RECOVER.name, cue: RECOVER.cue, media: null, clip: RECOVER.clip, seconds: s.rest,
                  label: 'Round ' + r + ' · recover' });
       });
       if (r < ROUNDS) {
-        t.push({ kind: 'break', name: BREAK.name, cue: BREAK.cue, figure: BREAK.figure,
-                 media: null, seconds: s.waterBreak, label: 'Water break' });
+        t.push({ kind: 'break', name: BREAK.name, cue: BREAK.cue,
+                 media: null, clip: null, seconds: s.waterBreak, label: 'Water break' });
       }
     }
 
     COOLDOWN.forEach(function (c, i) {
-      t.push({ kind: 'cooldown', name: c.name, cue: c.cue, figure: c.figure,
-               media: null, seconds: COOLDOWN_SECONDS,
+      t.push({ kind: 'cooldown', name: c.name, cue: c.cue,
+               media: null, clip: c.clip || null, seconds: COOLDOWN_SECONDS,
                label: 'Cool-down · ' + (i + 1) + ' of ' + COOLDOWN.length });
     });
 
@@ -265,6 +285,171 @@
     if (!wakeLock) return;
     try { wakeLock.release(); } catch (e) {}
     wakeLock = null;
+  }
+
+  /* ==========================================================
+     6b. YouTube exercise clips
+     ----------------------------------------------------------
+     One source video seeked to a per-exercise window, muted and
+     looping. This is decoration, never a dependency: if the API
+     fails to load, the network is down, or embedding is disabled
+     on the video, the panel falls back to a local media loop if one
+     exists and otherwise collapses, and the workout runs as before.
+     ========================================================== */
+
+  var yt = {
+    player: null,
+    ready: false,
+    failed: false,
+    clip: null,        // clip currently loaded
+    loopTimer: null,
+    paused: false
+  };
+
+  function sameClip(a, b) {
+    return !!a && !!b && a[0] === b[0] && a[1] === b[1];
+  }
+
+  function ytUsable() {
+    return yt.ready && !yt.failed && !!yt.player;
+  }
+
+  function loadYouTube() {
+    if (window.YT && window.YT.Player) { createYtPlayer(); return; }
+
+    var prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = function () {
+      if (typeof prev === 'function') { try { prev(); } catch (e) {} }
+      createYtPlayer();
+    };
+
+    var tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    tag.async = true;
+    tag.onerror = function () { yt.failed = true; refreshVisual(); };
+    document.head.appendChild(tag);
+
+    // Offline or blocked: stop waiting and run without video.
+    setTimeout(function () {
+      if (!yt.ready) { yt.failed = true; refreshVisual(); }
+    }, 10000);
+  }
+
+  function createYtPlayer() {
+    if (yt.player) return;
+    try {
+      yt.player = new window.YT.Player('yt-player', {
+        videoId: VIDEO_ID,
+        playerVars: {
+          autoplay: 0, controls: 0, disablekb: 1, fs: 0,
+          rel: 0, playsinline: 1, iv_load_policy: 3, modestbranding: 1,
+          cc_load_policy: 0, cc_lang_pref: 'none', annotations: 3
+        },
+        events: {
+          onReady: function (e) {
+            yt.ready = true;
+            yt.failed = false;
+            try { e.target.mute(); } catch (err) {}
+            killCaptions();
+            refreshVisual();
+          },
+          onError: function () {
+            // Embedding disabled, bad id, or region block: fall back for good.
+            yt.failed = true;
+            stopClipLoop();
+            refreshVisual();
+          },
+          onStateChange: function (e) {
+            // Backstop only; the poll below normally loops before ENDED fires.
+            if (e.data === window.YT.PlayerState.ENDED && yt.clip) {
+              seekClipStart();
+            }
+          }
+        }
+      });
+    } catch (e) {
+      yt.failed = true;
+    }
+  }
+
+  /* Captions are burned over the bottom of the frame and reappear on each
+     load, so unload the module every time rather than trusting the
+     cc_load_policy player var, which a viewer's global caption setting
+     overrides. Both module names are tried; which one applies varies. */
+  function killCaptions() {
+    if (!yt.player) return;
+    ['captions', 'cc'].forEach(function (m) {
+      try { yt.player.unloadModule(m); } catch (e) {}
+    });
+  }
+
+  function seekClipStart() {
+    if (!ytUsable() || !yt.clip) return;
+    try {
+      yt.player.seekTo(yt.clip[0], true);
+      if (!yt.paused) yt.player.playVideo();
+    } catch (e) {}
+  }
+
+  /* Poll and seek back just before the end point. Letting the player reach
+     endSeconds fires ENDED and produces a visible black flash on every loop,
+     which over a 45s interval happens four or five times. */
+  function startClipLoop() {
+    stopClipLoop();
+    yt.loopTimer = setInterval(function () {
+      if (!ytUsable() || !yt.clip || yt.paused) return;
+      try {
+        var t = yt.player.getCurrentTime();
+        if (t >= yt.clip[1] - 0.3 || t < yt.clip[0] - 1.5) {
+          yt.player.seekTo(yt.clip[0], true);
+        }
+      } catch (e) {}
+    }, 200);
+  }
+
+  function stopClipLoop() {
+    if (yt.loopTimer) { clearInterval(yt.loopTimer); yt.loopTimer = null; }
+  }
+
+  function playClip(clip) {
+    if (!ytUsable() || !clip) return;
+    yt.clip = clip;
+    yt.paused = false;
+    try {
+      yt.player.mute();
+      yt.player.loadVideoById({
+        videoId: VIDEO_ID,
+        startSeconds: clip[0],
+        suggestedQuality: 'medium'
+      });
+      killCaptions();
+      startClipLoop();
+    } catch (e) {
+      yt.failed = true;
+      refreshVisual();
+    }
+  }
+
+  function pauseClip() {
+    yt.paused = true;
+    stopClipLoop();
+    if (!ytUsable()) return;
+    try { yt.player.pauseVideo(); } catch (e) {}
+  }
+
+  function resumeClip() {
+    if (!ytUsable() || !yt.clip) return;
+    yt.paused = false;
+    try { yt.player.mute(); yt.player.playVideo(); } catch (e) {}
+    startClipLoop();
+  }
+
+  function stopClip() {
+    yt.clip = null;
+    yt.paused = false;
+    stopClipLoop();
+    if (!ytUsable()) return;
+    try { yt.player.pauseVideo(); } catch (e) {}
   }
 
   /* ==========================================================
@@ -478,7 +663,9 @@
     cue:     $('wo-cue'),
     next:    $('wo-next'),
     media:   $('wo-media'),
-    figure:  $('figure'),
+    mediaBox: document.querySelector('.media-box'),
+    pausedCard: $('paused-card'),
+    videoBox: $('video-box'),
     ringFill: $('ring-fill'),
     toggle:  $('btn-toggle'),
 
@@ -616,33 +803,73 @@
     el.next.hidden = !showNext;
     if (showNext) el.next.textContent = 'Next up: ' + s.nextName;
 
-    el.figure.setAttribute('class', 'figure fig-' + s.figure);
+    applyVisual(s);
+  }
 
-    // The loop replaces the figure only if the file actually exists.
-    // With media/ empty (the shipped state) every exercise shows its figure.
-    // `want` guards against a slow image resolving after she has already
-    // skipped on — without it a late onload would show the wrong exercise.
+  /* Visual priority: YouTube clip, then a local media loop, then nothing —
+     in which case the panel collapses and the name and cue carry the
+     instruction on their own.
+
+     Video shows only while the clock runs. A paused YouTube player replaces
+     the frame with its own chrome — title bar, play button, share, "More
+     videos" thumbnails, and the captions come back — so pausing swaps to a
+     plain card of the same size instead. */
+  function applyVisual(s) {
+    var useVideo   = !!(s.clip && ytUsable() && state.running);
+    var showPaused = !!(s.clip && ytUsable() && !state.running);
+
+    setHidden(el.videoBox, !useVideo);
+    setHidden(el.pausedCard, !showPaused);
+
+    if (useVideo || showPaused) {
+      el.mediaBox.classList.remove('is-empty');
+      setHidden(el.media, true);
+      el.media.onload = el.media.onerror = null;
+      el.media.removeAttribute('src');
+      mediaWanted = null;
+      if (useVideo) {
+        if (!sameClip(yt.clip, s.clip)) playClip(s.clip);
+        else if (yt.paused) resumeClip();
+      }
+      return;
+    }
+
+    // Not showing video on this segment — don't leave it playing unseen.
+    stopClip();
+
+    /* `want` guards against a slow image resolving after she has already
+       skipped on — without it a late onload would show the wrong exercise. */
     var want = s.media || null;
     mediaWanted = want;
     el.media.onload = el.media.onerror = null;
 
     if (want) {
       setHidden(el.media, true);
-      setHidden(el.figure, false);
+      el.mediaBox.classList.add('is-empty');
       el.media.onload = function () {
         if (mediaWanted !== want) return;
-        setHidden(el.media, false); setHidden(el.figure, true);
+        setHidden(el.media, false);
+        el.mediaBox.classList.remove('is-empty');
       };
       el.media.onerror = function () {
         if (mediaWanted !== want) return;
-        setHidden(el.media, true); setHidden(el.figure, false);
+        setHidden(el.media, true);
+        el.mediaBox.classList.add('is-empty');
       };
       el.media.src = want;
     } else {
       setHidden(el.media, true);
       el.media.removeAttribute('src');
-      setHidden(el.figure, false);
+      el.mediaBox.classList.add('is-empty');
     }
+  }
+
+  /* Re-run the visual choice for the segment on screen. Called when the
+     player becomes ready or fails after the segment was already painted. */
+  function refreshVisual() {
+    if (el.scWorkout.hidden) return;
+    var s = state.timeline[state.idx];
+    if (s) applyVisual(s);
   }
 
   function paintTime(secLeft, remainMs) {
@@ -689,6 +916,7 @@
     state.lastBeepSec = null;
 
     showScreen('workout');
+    el.body.removeAttribute('data-paused');
     el.toggle.textContent = 'Pause';
     painted.idx = -1;
     paintSegment(seg());
@@ -704,8 +932,11 @@
     state.running = false;
     cancelAnimationFrame(state.raf);
     hushSpeech();
+    pauseClip();
     releaseWakeLock();
+    el.body.setAttribute('data-paused', 'true');
     el.toggle.textContent = 'Resume';
+    refreshVisual();
   }
 
   function resume() {
@@ -713,7 +944,10 @@
     initAudio();
     state.running = true;
     state.endsAt = performance.now() + state.remainingMs;
+    el.body.removeAttribute('data-paused');
     el.toggle.textContent = 'Pause';
+    resumeClip();
+    refreshVisual();
     acquireWakeLock();
     state.raf = requestAnimationFrame(tick);
   }
@@ -748,11 +982,13 @@
     state.running = false;
     cancelAnimationFrame(state.raf);
     hushSpeech();
+    stopClip();
     releaseWakeLock();
     state.idx = 0;
     state.startedAt = null;
     state.finished = false;
     painted.idx = -1;
+    el.body.removeAttribute('data-paused');
     el.body.setAttribute('data-kind', 'idle');
     showScreen('start');
   }
@@ -770,6 +1006,7 @@
 
     state.running = false;
     cancelAnimationFrame(state.raf);
+    stopClip();
     releaseWakeLock();
     el.body.setAttribute('data-kind', 'finished');
 
@@ -1069,6 +1306,7 @@
     catchUp();
     if (state.running) {
       repaintAll();
+      refreshVisual();       // the iframe is throttled while hidden too
       cancelAnimationFrame(state.raf);
       state.raf = requestAnimationFrame(tick);
     }
@@ -1083,6 +1321,7 @@
   if (!speechOK) el.rowVoice.hidden = true;
   el.ringFill.style.strokeDasharray = RING_C.toFixed(1);
 
+  loadYouTube();
   loadSyncCfg();
   if (bootstrapFromHash()) showBootstrapped();
 

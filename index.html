@@ -51,15 +51,14 @@
       <p id="wo-cue" class="ex-cue"></p>
 
       <div class="media-box">
+        <div id="video-box" class="video-box" hidden>
+          <div id="yt-player"></div>
+        </div>
         <img id="wo-media" class="ex-media" alt="" hidden>
-        <svg id="figure" class="figure fig-march" viewBox="0 0 120 150" aria-hidden="true">
-          <circle class="fig-head" cx="60" cy="22" r="12"/>
-          <line   class="fig-torso" x1="60" y1="34" x2="60" y2="86"/>
-          <polyline class="fig-arm fig-arm-l" points="60,44 44,60 40,78"/>
-          <polyline class="fig-arm fig-arm-r" points="60,44 76,60 80,78"/>
-          <polyline class="fig-leg fig-leg-l" points="60,86 52,110 48,134"/>
-          <polyline class="fig-leg fig-leg-r" points="60,86 68,110 72,134"/>
-        </svg>
+        <div id="paused-card" class="paused-card" hidden aria-hidden="true">
+          <span class="paused-bars"></span>
+          <span class="paused-text">Paused</span>
+        </div>
       </div>
 
       <p id="wo-next" class="next-up" hidden></p>

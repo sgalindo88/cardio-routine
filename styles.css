@@ -146,7 +146,7 @@ body{
 }
 
 .info-area{
-  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
   gap:6px; text-align:center; width:100%; min-height:0; max-width:640px;
 }
 .ex-name{
@@ -166,8 +166,8 @@ body{
   position:relative; flex:1 1 auto; min-height:0;
   display:grid; place-items:center; width:100%;
 }
-.ex-media, .figure{
-  max-height:100%; max-width:min(100%,240px);
+.ex-media{
+  max-height:100%; max-width:min(100%,320px);
   height:100%; width:auto; object-fit:contain;
 }
 .ex-media{ border-radius:12px; }
@@ -247,132 +247,7 @@ body{
 .hist-list .hist-dur{ color:var(--muted); font-variant-numeric:tabular-nums; }
 .hist-empty{ color:var(--muted); text-align:center; padding:30px 10px; }
 
-/* ============================================================
-   Stick figure
-   ============================================================ */
-.figure{ overflow:visible; }
-.fig-head{ fill:var(--state); }
-.fig-torso,.fig-arm,.fig-leg{
-  fill:none; stroke:var(--state); stroke-width:7;
-  stroke-linecap:round; stroke-linejoin:round;
-}
-.fig-arm,.fig-leg,.fig-torso,.fig-head{ transform-box:view-box; }
-.fig-arm{ transform-origin:60px 44px; }
-.fig-leg{ transform-origin:60px 86px; }
-.figure > *{ animation-timing-function:ease-in-out; animation-iteration-count:infinite; }
-
-@keyframes legLift  { 0%,100%{transform:rotate(0)}    50%{transform:rotate(24deg)} }
-@keyframes legLiftN { 0%,100%{transform:rotate(0)}    50%{transform:rotate(-24deg)} }
-@keyframes kneeHigh { 0%,100%{transform:rotate(0)}    50%{transform:rotate(46deg)} }
-@keyframes kneeHighN{ 0%,100%{transform:rotate(0)}    50%{transform:rotate(-46deg)} }
-@keyframes armSwing { 0%,100%{transform:rotate(16deg)} 50%{transform:rotate(-22deg)} }
-@keyframes armSwingN{ 0%,100%{transform:rotate(-16deg)}50%{transform:rotate(22deg)} }
-@keyframes armOver  { 0%,100%{transform:rotate(0)}    50%{transform:rotate(-150deg)} }
-@keyframes armOverN { 0%,100%{transform:rotate(0)}    50%{transform:rotate(150deg)} }
-@keyframes armPush  { 0%,100%{transform:rotate(0)}    50%{transform:rotate(-64deg)} }
-@keyframes armPushN { 0%,100%{transform:rotate(0)}    50%{transform:rotate(64deg)} }
-@keyframes armCurl  { 0%,100%{transform:rotate(0)}    50%{transform:rotate(-104deg)} }
-@keyframes armCurlN { 0%,100%{transform:rotate(0)}    50%{transform:rotate(104deg)} }
-@keyframes armCircle{ 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
-@keyframes legOut   { 0%,100%{transform:rotate(0)}    50%{transform:rotate(-30deg)} }
-@keyframes legOutN  { 0%,100%{transform:rotate(0)}    50%{transform:rotate(30deg)} }
-@keyframes legBack  { 0%,100%{transform:rotate(0)}    50%{transform:rotate(38deg)} }
-@keyframes tapFast  { 0%,100%{transform:rotate(0)}    50%{transform:rotate(11deg)} }
-@keyframes tapFastN { 0%,100%{transform:rotate(0)}    50%{transform:rotate(-11deg)} }
-@keyframes swayX    { 0%,100%{transform:translateX(-13px)} 50%{transform:translateX(13px)} }
-@keyframes twistY   { 0%,100%{transform:rotate(-13deg)} 50%{transform:rotate(13deg)} }
-@keyframes leanSide { 0%,100%{transform:rotate(-9deg)}  50%{transform:rotate(9deg)} }
-@keyframes breathe  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
-@keyframes hinge    { 0%,100%{transform:rotate(0)}    50%{transform:rotate(-26deg)} }
-
-/* --- march (recover, warm-up) --- */
-.fig-march .fig-leg-l{ animation:legLift  .82s infinite; }
-.fig-march .fig-leg-r{ animation:legLiftN .82s infinite .41s; }
-.fig-march .fig-arm-l{ animation:armSwingN .82s infinite; }
-.fig-march .fig-arm-r{ animation:armSwing  .82s infinite; }
-
-/* --- 1. brisk march with high arm reaches --- */
-.fig-marchReach .fig-leg-l{ animation:kneeHigh  .78s infinite; }
-.fig-marchReach .fig-leg-r{ animation:kneeHighN .78s infinite .39s; }
-.fig-marchReach .fig-arm-l{ animation:armOverN 1.56s infinite; }
-.fig-marchReach .fig-arm-r{ animation:armOver  1.56s infinite .78s; }
-
-/* --- 2. side step-taps with pushes --- */
-.fig-stepSide{ animation:swayX 1.5s infinite; }
-.fig-stepSide .fig-arm-l{ animation:armPush 1.5s infinite; }
-.fig-stepSide .fig-arm-r{ animation:armPushN 1.5s infinite; }
-.fig-stepSide .fig-leg-l{ animation:legOut  1.5s infinite; }
-.fig-stepSide .fig-leg-r{ animation:legOutN 1.5s infinite; }
-
-/* --- 3. half jacks --- */
-.fig-armsUp .fig-arm-l{ animation:armOverN 1.05s infinite; }
-.fig-armsUp .fig-arm-r{ animation:armOver  1.05s infinite; }
-.fig-armsUp .fig-leg-l{ animation:legOut   2.1s infinite; }
-.fig-armsUp .fig-leg-r{ animation:legOutN  2.1s infinite 1.05s; }
-
-/* --- 4. cross-body knee taps --- */
-.fig-kneeLift .fig-leg-l{ animation:kneeHigh  1.3s infinite; }
-.fig-kneeLift .fig-leg-r{ animation:kneeHighN 1.3s infinite .65s; }
-.fig-kneeLift .fig-arm-l{ animation:armCurlN  1.3s infinite; }
-.fig-kneeLift .fig-arm-r{ animation:armCurl   1.3s infinite .65s; }
-
-/* --- 5. skater taps --- */
-.fig-skater{ animation:swayX 1.4s infinite; }
-.fig-skater .fig-torso{ animation:leanSide 1.4s infinite; transform-origin:60px 86px; }
-.fig-skater .fig-leg-l{ animation:legBack 1.4s infinite; }
-.fig-skater .fig-leg-r{ animation:legBack 1.4s infinite .7s; }
-.fig-skater .fig-arm-l{ animation:armSwing  1.4s infinite; }
-.fig-skater .fig-arm-r{ animation:armSwingN 1.4s infinite; }
-
-/* --- 6. shadow boxing --- */
-.fig-punch .fig-arm-l{ animation:armPush  .58s infinite; }
-.fig-punch .fig-arm-r{ animation:armPushN .58s infinite .29s; }
-.fig-punch .fig-leg-l{ animation:tapFast  .29s infinite; }
-.fig-punch .fig-leg-r{ animation:tapFastN .29s infinite .145s; }
-
-/* --- 7. heel digs with bicep swings --- */
-.fig-heelDig .fig-leg-l{ animation:legOut  1.2s infinite; }
-.fig-heelDig .fig-leg-r{ animation:legOutN 1.2s infinite .6s; }
-.fig-heelDig .fig-arm-l{ animation:armCurlN .6s infinite; }
-.fig-heelDig .fig-arm-r{ animation:armCurl  .6s infinite; }
-
-/* --- 8. fast feet to soft reach --- */
-.fig-reach .fig-leg-l{ animation:tapFast  .26s infinite; }
-.fig-reach .fig-leg-r{ animation:tapFastN .26s infinite .13s; }
-.fig-reach .fig-arm-l{ animation:armOverN 2.4s infinite; }
-.fig-reach .fig-arm-r{ animation:armOver  2.4s infinite; }
-
-/* --- warm-up: shoulder rolls --- */
-.fig-shoulders .fig-arm-l{ animation:armCircle 2.2s linear infinite; }
-.fig-shoulders .fig-arm-r{ animation:armCircle 2.2s linear infinite; }
-
-/* --- warm-up: torso twists --- */
-.fig-twist{ animation:twistY 1.9s infinite; }
-.fig-twist .fig-arm-l{ animation:armSwing  1.9s infinite; }
-.fig-twist .fig-arm-r{ animation:armSwingN 1.9s infinite; }
-
-/* --- cool-down: quad stretch --- */
-.fig-quad .fig-leg-r{ animation:legBack 4s infinite; }
-.fig-quad .fig-arm-r{ animation:armCurl 4s infinite; }
-
-/* --- cool-down: hamstring hinge --- */
-.fig-hinge .fig-torso{ animation:hinge 4s infinite; transform-origin:60px 86px; }
-.fig-hinge .fig-arm-l{ animation:armPush 4s infinite; }
-.fig-hinge .fig-arm-r{ animation:armPushN 4s infinite; }
-.fig-hinge .fig-leg-l{ animation:legOut 4s infinite; }
-
-/* --- cool-down: side bend --- */
-.fig-sideBend{ animation:leanSide 4.5s infinite; }
-.fig-sideBend .fig-arm-l{ animation:armOverN 4.5s infinite; }
-.fig-sideBend .fig-arm-r{ animation:armOver  4.5s infinite; }
-
-/* --- cool-down / break: gentle --- */
-.fig-stretch{ animation:breathe 4.5s infinite; }
-.fig-stretch .fig-arm-l{ animation:armSwing  4.5s infinite; }
-.fig-stretch .fig-arm-r{ animation:armSwingN 4.5s infinite; }
-
 @media (prefers-reduced-motion:reduce){
-  .figure, .figure *{ animation:none !important; }
   .btn{ transition:none; }
 }
 
@@ -411,3 +286,70 @@ body{
 .sync-msg.ok  { color:#2F5D3F; background:rgba(79,112,67,.12); }
 .sync-msg.bad { color:#8A3520; background:rgba(154,60,37,.10); }
 .sync-msg.busy{ color:var(--muted); background:rgba(0,0,0,.04); }
+
+/* ---------- exercise video ---------- */
+.video-box{
+  position:relative;
+  width:100%;
+  max-width:min(100%, 560px);
+  aspect-ratio:16 / 9;
+  max-height:100%;
+  min-height:0;
+  border-radius:14px;
+  overflow:hidden;
+  background:#000;
+  box-shadow:0 2px 10px rgba(0,0,0,.12);
+  /* She should never be able to tap through into YouTube mid-workout. */
+  pointer-events:none;
+}
+.video-box > div{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  border:0; display:block;
+}
+/* Scaled slightly past the frame and clipped, which pushes YouTube's
+   residual chrome — the remaining-time readout in the corner — outside the
+   visible area. The source footage is centred with generous margin, so the
+   crop costs nothing that matters. */
+.video-box iframe{
+  position:absolute;
+  top:50%; left:50%;
+  width:118%; height:118%;
+  transform:translate(-50%, -50%);
+  border:0; display:block;
+}
+
+@media (orientation:landscape) and (min-width:640px){
+  .video-box{ max-width:min(100%, 460px); }
+}
+
+/* ---------- paused card ----------
+   Stands in for the player while paused. Keeps the panel the same size so
+   the layout does not jump, and keeps YouTube's paused chrome off screen. */
+.paused-card{
+  width:100%;
+  max-width:min(100%, 560px);
+  aspect-ratio:16 / 9;
+  max-height:100%;
+  min-height:0;
+  border-radius:14px;
+  background:var(--state-wash);
+  border:2px dashed var(--line);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:10px;
+}
+.paused-bars{
+  width:30px; height:34px;
+  border-left:10px solid var(--state);
+  border-right:10px solid var(--state);
+}
+.paused-text{
+  font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--state); font-size:clamp(.8rem,2.2vmin,1rem);
+}
+@media (orientation:landscape) and (min-width:640px){
+  .paused-card{ max-width:min(100%, 460px); }
+}
+
+/* No clip and no media file: collapse the panel rather than leaving a hole. */
+.media-box:empty, .media-box.is-empty{ display:none; }
