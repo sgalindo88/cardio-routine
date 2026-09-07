@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F7F4EF">
+<title>Cardio Routine</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-kind="idle">
+
+<!-- ══════════════ START ══════════════ -->
+<section id="screen-start" class="screen screen-pad">
+  <div class="stack-center">
+    <h1 class="title">Cardio Routine</h1>
+    <p class="subtitle" id="start-summary">2 rounds &middot; 8 exercises</p>
+    <button id="btn-start" class="btn btn-primary btn-huge">Start</button>
+    <div class="row-secondary">
+      <button id="btn-open-settings" class="btn btn-quiet">Settings</button>
+      <button id="btn-open-history" class="btn btn-quiet">History</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ WORKOUT ══════════════ -->
+<section id="screen-workout" class="screen" hidden>
+
+  <header class="wo-head">
+    <p id="wo-label" class="wo-label">Warm-up</p>
+    <p id="wo-total" class="wo-total">22:00 left</p>
+  </header>
+
+  <div class="wo-body">
+
+    <div class="ring-area">
+      <div class="ring-wrap">
+        <svg class="ring" viewBox="0 0 200 200" aria-hidden="true">
+          <circle class="ring-track" cx="100" cy="100" r="88"></circle>
+          <circle id="ring-fill" class="ring-fill" cx="100" cy="100" r="88"></circle>
+        </svg>
+        <div class="ring-center">
+          <span id="wo-seconds" class="seconds" role="timer" aria-live="off">45</span>
+          <span id="wo-kind" class="kind-tag">Work</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-area">
+      <h2 id="wo-name" class="ex-name" aria-live="polite">Get ready</h2>
+      <p id="wo-cue" class="ex-cue"></p>
+
+      <div class="media-box">
+        <img id="wo-media" class="ex-media" alt="" hidden>
+        <svg id="figure" class="figure fig-march" viewBox="0 0 120 150" aria-hidden="true">
+          <circle class="fig-head" cx="60" cy="22" r="12"/>
+          <line   class="fig-torso" x1="60" y1="34" x2="60" y2="86"/>
+          <polyline class="fig-arm fig-arm-l" points="60,44 44,60 40,78"/>
+          <polyline class="fig-arm fig-arm-r" points="60,44 76,60 80,78"/>
+          <polyline class="fig-leg fig-leg-l" points="60,86 52,110 48,134"/>
+          <polyline class="fig-leg fig-leg-r" points="60,86 68,110 72,134"/>
+        </svg>
+      </div>
+
+      <p id="wo-next" class="next-up" hidden></p>
+    </div>
+
+  </div>
+
+  <nav class="controls">
+    <button id="btn-prev"   class="btn btn-round" aria-label="Previous exercise">&#9198;</button>
+    <button id="btn-toggle" class="btn btn-primary btn-wide">Pause</button>
+    <button id="btn-next"   class="btn btn-round" aria-label="Next exercise">&#9197;</button>
+    <button id="btn-plus"   class="btn btn-round btn-plus" aria-label="Add fifteen seconds">+15</button>
+  </nav>
+  <div class="controls-sub">
+    <button id="btn-reset" class="btn btn-quiet">Reset</button>
+  </div>
+</section>
+
+<!-- ══════════════ FINISHED ══════════════ -->
+<section id="screen-finished" class="screen screen-pad" hidden>
+  <div class="stack-center">
+    <p class="done-mark" aria-hidden="true">&#10003;</p>
+    <h1 class="title">Well done</h1>
+    <p id="fin-time" class="subtitle"></p>
+    <p id="fin-count" class="subtitle-small"></p>
+    <button id="btn-again" class="btn btn-primary btn-huge">Again</button>
+    <div class="row-secondary">
+      <button id="btn-done" class="btn btn-quiet">Done</button>
+      <button id="btn-open-history-2" class="btn btn-quiet">History</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ SETTINGS ══════════════ -->
+<div id="panel-settings" class="panel" hidden role="dialog" aria-modal="true" aria-label="Settings">
+  <div class="panel-inner">
+    <header class="panel-head">
+      <h2 class="panel-title">Settings</h2>
+      <button id="btn-close-settings" class="btn btn-round" aria-label="Close settings">&times;</button>
+    </header>
+
+    <div class="setting" data-key="work">
+      <div class="setting-label">Work<span class="setting-hint">time per exercise</span></div>
+      <div class="stepper">
+        <button class="btn btn-round" data-key="work" data-delta="-5" aria-label="Less work time">&minus;</button>
+        <span class="stepper-val" id="val-work">45s</span>
+        <button class="btn btn-round" data-key="work" data-delta="5" aria-label="More work time">+</button>
+      </div>
+    </div>
+
+    <div class="setting" data-key="rest">
+      <div class="setting-label">Recover<span class="setting-hint">marching between moves</span></div>
+      <div class="stepper">
+        <button class="btn btn-round" data-key="rest" data-delta="-5" aria-label="Less recovery time">&minus;</button>
+        <span class="stepper-val" id="val-rest">15s</span>
+        <button class="btn btn-round" data-key="rest" data-delta="5" aria-label="More recovery time">+</button>
+      </div>
+    </div>
+
+    <div class="setting" data-key="waterBreak">
+      <div class="setting-label">Water break<span class="setting-hint">between rounds</span></div>
+      <div class="stepper">
+        <button class="btn btn-round" data-key="waterBreak" data-delta="-15" aria-label="Shorter water break">&minus;</button>
+        <span class="stepper-val" id="val-waterBreak">60s</span>
+        <button class="btn btn-round" data-key="waterBreak" data-delta="15" aria-label="Longer water break">+</button>
+      </div>
+    </div>
+
+    <div class="setting">
+      <div class="setting-label">Countdown beeps</div>
+      <button id="tog-beeps" class="toggle" role="switch" aria-checked="true"><span class="knob"></span></button>
+    </div>
+
+    <div class="setting" id="row-voice">
+      <div class="setting-label">Spoken cues<span class="setting-hint">announces each exercise</span></div>
+      <button id="tog-voice" class="toggle" role="switch" aria-checked="true"><span class="knob"></span></button>
+    </div>
+
+    <p id="settings-total" class="panel-note"></p>
+    <button id="btn-defaults" class="btn btn-quiet">Reset to defaults</button>
+
+    <details id="sync-setup" class="sync-setup">
+      <summary class="sync-summary">Sheet sync</summary>
+      <div class="sync-fields">
+        <label class="fld">
+          <span class="fld-label">Apps Script URL</span>
+          <input id="in-sync-url" type="url" inputmode="url" autocomplete="off"
+                 autocapitalize="off" spellcheck="false"
+                 placeholder="https://script.google.com/macros/s/…/exec">
+        </label>
+        <label class="fld">
+          <span class="fld-label">Token</span>
+          <input id="in-sync-token" type="text" autocomplete="off"
+                 autocapitalize="off" spellcheck="false"
+                 placeholder="matches SHARED_TOKEN in Code.gs">
+        </label>
+        <div class="sync-actions">
+          <button id="btn-sync-save"  class="btn btn-small btn-primary">Save</button>
+          <button id="btn-sync-test"  class="btn btn-small">Test</button>
+          <button id="btn-sync-link"  class="btn btn-small">Copy setup link</button>
+          <button id="btn-sync-clear" class="btn btn-quiet">Clear</button>
+        </div>
+        <p id="sync-msg" class="sync-msg" hidden></p>
+        <p class="panel-note">
+          Saved on this device only — never in the repo or the page source.
+          The setup link contains the token, so treat it like a password.
+        </p>
+      </div>
+    </details>
+
+    <p id="sync-status" class="sync-line" hidden></p>
+  </div>
+</div>
+
+<!-- ══════════════ HISTORY ══════════════ -->
+<div id="panel-history" class="panel" hidden role="dialog" aria-modal="true" aria-label="History">
+  <div class="panel-inner">
+    <header class="panel-head">
+      <h2 class="panel-title">History</h2>
+      <button id="btn-close-history" class="btn btn-round" aria-label="Close history">&times;</button>
+    </header>
+    <p id="hist-count" class="panel-note"></p>
+    <ul id="hist-list" class="hist-list"></ul>
+    <button id="btn-clear-hist" class="btn btn-quiet btn-danger">Clear history</button>
+  </div>
+</div>
+
+<script defer src="config.js"></script>
+<script defer src="app.js"></script>
+</body>
+</html>
