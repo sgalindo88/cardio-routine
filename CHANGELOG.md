@@ -7,6 +7,34 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.2.1] — 2026-09-07
+
+### Fixed
+
+- **Ads could not be skipped.** `pointer-events: none` on the video container — added to stop a
+  stray tap opening YouTube — also blocked YouTube's own "Skip" button, so an ad had to be watched
+  to the end with no way out. The shield is removed and the player is interactive again.
+- The clip poller now restarts playback if it finds the player paused while the workout is running,
+  so a stray tap on the now-interactive player self-corrects within about 200ms instead of leaving
+  a frozen demo for the rest of the interval.
+
+### Added
+
+- **Ad detection and notice.** While an ad plays, `getDuration()` reports the ad's length rather
+  than the video's — the only signal the IFrame API offers. Two consecutive polls of a mismatch
+  raise a notice across the top of the player telling her she can skip or carry on. Seeking is
+  suspended while an ad is on screen, since the poller would otherwise fight it.
+- The notice sits along the top edge, where the Skip button never is, and passes clicks through so
+  it can never block it.
+
+### Notes
+
+- Ad handling could not be verified end to end: ads cannot be triggered on demand, so the detection
+  threshold is unproven against a real one. The skip fix itself is verified — the player is
+  interactive and auto-recovers from taps.
+
+---
+
 ## [1.2.0] — 2026-09-07
 
 Video coverage completed for the warm-up; recovery intervals deliberately left without it.

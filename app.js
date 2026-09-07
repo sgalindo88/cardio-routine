@@ -42,6 +42,10 @@
      the source video frame by frame. Segments with no clip show no video
      panel; the name and cue carry those on their own. */
   var VIDEO_ID = 'HP_P-A3crw4';
+  /* Length of the source video. While an ad plays, getDuration() reports the
+     ad's length instead, which is the only signal the IFrame API gives us
+     that an ad is on screen. */
+  var VIDEO_DURATION = 1336;
   var MARCH_CLIP = [58, 68];
 
   /* Cool-down windows, located by stepping through the source video's own
@@ -309,7 +313,9 @@
     failed: false,
     clip: null,        // clip currently loaded
     loopTimer: null,
-    paused: false
+    paused: false,
+    inAd: false,
+    adStreak: 0
   };
 
   function sameClip(a, b) {
@@ -417,14 +423,38 @@
   /* Poll and seek back just before the end point. Letting the player reach
      endSeconds fires ENDED and produces a visible black flash on every loop,
      which over a 45s interval happens four or five times. */
+  function setAdVisible(on) {
+    if (yt.inAd === on) return;
+    yt.inAd = on;
+    setHidden(el.adHint, !on);
+  }
+
   function startClipLoop() {
     stopClipLoop();
     yt.loopTimer = setInterval(function () {
       if (!ytUsable() || !yt.clip || yt.paused) return;
       try {
+        var dur = yt.player.getDuration();
+
+        /* An ad hijacks the player: getDuration() switches to the ad's
+           length. Require two consecutive polls so a momentary 0 during
+           loading cannot flash the notice. */
+        var looksLikeAd = dur > 0 && Math.abs(dur - VIDEO_DURATION) > 5;
+        yt.adStreak = looksLikeAd ? yt.adStreak + 1 : 0;
+        setAdVisible(yt.adStreak >= 2);
+
+        if (yt.inAd) return;   // never seek or re-play during an ad
+
         var t = yt.player.getCurrentTime();
         if (t >= yt.clip[1] - 0.3 || t < yt.clip[0] - 1.5) {
           yt.player.seekTo(yt.clip[0], true);
+        }
+
+        /* The player is tappable so "Skip Ad" can be reached, which means a
+           stray tap can also pause the demo. Put it back. */
+        var st = yt.player.getPlayerState();
+        if (st === window.YT.PlayerState.PAUSED && state.running) {
+          yt.player.playVideo();
         }
       } catch (e) {}
     }, 200);
@@ -438,6 +468,8 @@
     if (!ytUsable() || !clip) return;
     yt.clip = clip;
     yt.paused = false;
+    yt.adStreak = 0;
+    setAdVisible(false);
     try {
       yt.player.mute();
       yt.player.loadVideoById({
@@ -455,6 +487,8 @@
 
   function pauseClip() {
     yt.paused = true;
+    yt.adStreak = 0;
+    setAdVisible(false);
     stopClipLoop();
     if (!ytUsable()) return;
     try { yt.player.pauseVideo(); } catch (e) {}
@@ -470,6 +504,8 @@
   function stopClip() {
     yt.clip = null;
     yt.paused = false;
+    yt.adStreak = 0;
+    setAdVisible(false);
     stopClipLoop();
     if (!ytUsable()) return;
     try { yt.player.pauseVideo(); } catch (e) {}
@@ -689,6 +725,7 @@
     mediaBox: document.querySelector('.media-box'),
     pausedCard: $('paused-card'),
     videoBox: $('video-box'),
+    adHint:  $('ad-hint'),
     ringFill: $('ring-fill'),
     toggle:  $('btn-toggle'),
 

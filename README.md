@@ -136,8 +136,18 @@ with retry. It runs identically with the wifi off.
   itself.
 - **Timing is clock-based**, not tick-counted, so backgrounding the tab mid-workout and coming
   back doesn't leave the timer minutes behind.
-- **Ads.** Embedded YouTube can serve ads, which would replace the clip mid-interval. The timer
-  and audio cues keep running correctly. There is no player parameter that prevents this; the
-  `media/` loops avoid it entirely if it becomes a problem.
+- **Ads.** Embedded YouTube can serve ads, which replace the clip mid-interval. There is no player
+  parameter that prevents this. When one is detected the panel shows a notice across the top of the
+  player, and **the player stays tappable so YouTube's own "Skip" button can be reached** — an
+  earlier version blocked taps to stop her opening YouTube by accident, which also made ads
+  unskippable. If she ignores the ad entirely the timer, audio cues, and history are unaffected and
+  the clip returns by itself when the ad ends.
+
+  Because the player is tappable, a stray tap can pause the demo. The clip poller notices a
+  playback state of PAUSED while the workout is running and restarts it within a fifth of a second,
+  so this self-corrects.
+
+  Ads are inherent to embedding someone else's monetised video. Populating `media/` with local
+  loops is the only way to eliminate them outright.
 - **Captions are force-disabled** on every clip load, since they render over the bottom of the
   frame and reappear each time a video is loaded.
