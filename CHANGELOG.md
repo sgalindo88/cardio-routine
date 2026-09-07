@@ -7,6 +7,23 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.3.1] — 2026-09-07
+
+### Changed
+
+- **Clips recropped to a centred 1:1 square**, 360×360 out of the 640×360 source. Both of the
+  source's burned-in overlays sit in corners the square excludes, so its countdown ring is now gone
+  as well as its remaining-time readout — the ring had survived every earlier attempt, and blurring
+  it with `delogo` left a worse smear than leaving it. The tighter crop also renders the figure
+  larger on screen.
+- All fourteen clips were checked frame by frame to confirm she stays fully in shot, including
+  arms-wide on half-jacks and the lateral travel in side-steps and skaters.
+- The video box sizes from `width`/`height: auto` against both maxima rather than `width: 100%`,
+  which would letterbox a square clip against the background whenever height is the tighter
+  constraint.
+
+---
+
 ## [1.3.0] — 2026-09-07
 
 Exercise demonstrations moved from a YouTube embed to local video files.

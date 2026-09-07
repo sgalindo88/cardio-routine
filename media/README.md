@@ -1,7 +1,7 @@
 # Exercise clips
 
-Fourteen short muted clips, one per movement, played on a loop while the timer runs. About 1.2 MB
-in total.
+Fourteen short muted square clips, one per movement, played on a loop while the timer runs. About
+1.4 MB in total.
 
 These are cut from a single source video that is kept **outside this repository**, in
 `src-files/videoplayback.mp4`. Only the windows the app actually plays are extracted — roughly two
@@ -37,13 +37,14 @@ Encoding choices worth knowing:
 
 - **Audio is stripped** (`-an`). Every clip plays muted, so the track is pure weight.
 - **`yuv420p`** — Safari will not decode some other pixel formats.
-- **480px wide, CRF 30.** The panel renders around 386px on a phone and 460px in landscape, so
-  there is nothing to gain from more.
-- **The crop takes only the bottom-right corner.** That removes the source's own burned-in
-  remaining-time readout, which would otherwise sit next to our timer showing a different number.
-  Cropping from that one corner keeps her feet in frame — several of these moves are footwork — and
-  leaves the source's countdown ring in the top-left whole. A centred crop clips that ring into a
-  fragment, which looks worse than leaving it alone.
+- **Square, 360×360, CRF 30.** A centred crop out of the 640×360 source. Both of the source's
+  burned-in overlays — its countdown ring at the left, its remaining-time readout at the right —
+  sit in corners the square excludes. That readout was the one that mattered, since it sat beside
+  our timer showing a different number.
+- **360×360 is native resolution**, so nothing is upscaled, and the tighter crop makes the figure
+  larger on screen than a 16:9 version.
+- Every clip was checked frame by frame to confirm she stays fully in shot, including arms-wide on
+  half-jacks and the lateral travel in side-steps and skaters.
 
 ## Adding a clip
 

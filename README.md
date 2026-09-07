@@ -55,7 +55,7 @@ index.html    markup: 3 screens, 2 panels, the video panel
 styles.css    palette, layout, orientation handling
 config.js     stays blank — sync config lives on the device, not the repo
 app.js        data, timeline, timer, audio, wake lock, storage, sync
-media/        14 exercise clips, ~1.2MB total — see media/README.md
+media/        14 square exercise clips, ~1.4MB total — see media/README.md
 ```
 
 The Apps Script source and its setup guide are kept outside this repo as local notes, so the
@@ -90,9 +90,12 @@ player: ads that could interrupt mid-exercise, branding and title overlays, capt
 themselves over the frame, and a hard dependency on the network. See `media/README.md` for how the
 clips were produced.
 
-Two notes on the footage. The leg demonstrated on screen will not always be the side a cool-down cue
-names — the cue is authoritative. And the source's own countdown ring is still visible in the
-top-left of each clip; cropping far enough to remove it wrecks the framing.
+Clips are square, cropped 360×360 out of the 640×360 source. Both of the source's burned-in
+overlays sit in corners the square excludes, and because the crop is tighter the figure ends up
+larger on screen than a 16:9 version would be.
+
+One note on the footage: the leg demonstrated on screen will not always be the side a cool-down cue
+names. The cue is authoritative.
 
 ## Google Sheets sync
 

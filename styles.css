@@ -291,13 +291,15 @@ body{
    element is inert to taps and there is no player UI to leak through. */
 .ex-video{
   display:block;
-  width:100%;
+  /* Clips are square. width/height auto with both maxima set lets the box
+     shrink on whichever axis runs out first while staying square — setting
+     width:100% instead would letterbox it against the background whenever
+     the available height is the tighter constraint. */
+  width:auto;
   height:auto;
-  max-width:min(100%, 560px);
+  max-width:min(100%, 420px);
   max-height:100%;
   min-height:0;
-  /* No forced aspect-ratio and contain, not cover: the clips are cropped at
-     encode time, and cover would trim that framing a second time. */
   object-fit:contain;
   border-radius:14px;
   background:var(--state-wash);
@@ -305,5 +307,5 @@ body{
 }
 
 @media (orientation:landscape) and (min-width:640px){
-  .ex-video{ max-width:min(100%, 460px); }
+  .ex-video{ max-width:min(100%, 340px); }
 }
