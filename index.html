@@ -51,15 +51,10 @@
       <p id="wo-cue" class="ex-cue"></p>
 
       <div class="media-box">
-        <div id="video-box" class="video-box" hidden>
-          <p id="ad-hint" class="ad-hint" hidden>Ad playing — tap “Skip” on the video, or just keep going</p>
-          <div id="yt-player"></div>
-        </div>
-        <img id="wo-media" class="ex-media" alt="" hidden>
-        <div id="paused-card" class="paused-card" hidden aria-hidden="true">
-          <span class="paused-bars"></span>
-          <span class="paused-text">Paused</span>
-        </div>
+        <video id="ex-video" class="ex-video"
+               muted loop playsinline preload="auto"
+               disablepictureinpicture disableremoteplayback
+               hidden aria-hidden="true"></video>
       </div>
 
       <p id="wo-next" class="next-up" hidden></p>

@@ -34,40 +34,31 @@
     { id: 'fast-feet',      name: 'Fast-Feet Shuffles to Soft Reach',
       cue: 'Quick small steps in place, then reach both arms up high. Repeat.' }
   ];
-  EXERCISES.forEach(function (e) { e.media = 'media/' + e.id + '.webp'; });
 
-  /* ---- YouTube clips -------------------------------------------------
-     One source video, seeked to a different 10s window per exercise.
-     [startSeconds, endSeconds]. Windows were located by stepping through
-     the source video frame by frame. Segments with no clip show no video
-     panel; the name and cue carry those on their own. */
-  var VIDEO_ID = 'HP_P-A3crw4';
-  /* Length of the source video. While an ad plays, getDuration() reports the
-     ad's length instead, which is the only signal the IFrame API gives us
-     that an ad is on screen. */
-  var VIDEO_DURATION = 1336;
-  var MARCH_CLIP = [58, 68];
+  /* ---- Exercise clips ------------------------------------------------
+     Short local files under media/, cut from the source video with
+     src-files/extract-clips.sh. Each is muted and loops natively, so a
+     segment just points at a filename. Warm-up and cool-down reuse the
+     same clips where the movement is the same. */
+  var CLIP_DIR = 'media/';
+  var MARCH_CLIP     = 'march.mp4';
+  var WALK_CLIP      = 'walk.mp4';
+  var ARMS_CLIP      = 'arm-raises.mp4';
+  var HEEL_CLIP      = 'heel-digs.mp4';
+  var QUAD_CLIP      = 'quad-stretch.mp4';
+  var CALF_R_CLIP    = 'calf-right.mp4';
+  var CALF_L_CLIP    = 'calf-left.mp4';
+  var HAMSTRING_CLIP = 'hamstring.mp4';
 
-  /* Cool-down windows, located by stepping through the source video's own
-     stretching block. The clip demonstrates the movement; the cue names the
-     side, which will not always match the side she is on screen. */
-  var WALK_CLIP = [137, 147];      // the stepping half of the "straight walk" block
-  var ARMS_CLIP = [152, 162];      // arm raises, "forward and up"
-  var HEEL_CLIP = [180, 190];      // same heel digs used later as exercise 7
-
-  var QUAD_CLIP = [1236, 1246];
-  var CALF_R_CLIP = [1250, 1260];
-  var CALF_L_CLIP = [1264, 1274];
-  var HAMSTRING_CLIP = [1291, 1301];
   var CLIPS = {
-    'march-reach':    [58, 68],
-    'side-step-taps': [299, 309],
-    'half-jacks':     [628, 638],
-    'knee-taps':      [269, 279],
-    'skater-taps':    [809, 819],
-    'shadow-boxing':  [28, 38],
-    'heel-digs':      [180, 190],
-    'fast-feet':      [868, 878]
+    'march-reach':    MARCH_CLIP,
+    'side-step-taps': 'side-step-taps.mp4',
+    'half-jacks':     'half-jacks.mp4',
+    'knee-taps':      'knee-taps.mp4',
+    'skater-taps':    'skater-taps.mp4',
+    'shadow-boxing':  'shadow-boxing.mp4',
+    'heel-digs':      HEEL_CLIP,
+    'fast-feet':      'fast-feet.mp4'
   };
   EXERCISES.forEach(function (e) { e.clip = CLIPS[e.id] || null; });
 
@@ -157,28 +148,24 @@
     var t = [];
 
     WARMUP.forEach(function (w, i) {
-      t.push({ kind: 'warmup', name: w.name, cue: w.cue,
-               media: null, clip: w.clip || null, seconds: WARMUP_SECONDS,
+      t.push({ kind: 'warmup', name: w.name, cue: w.cue, clip: w.clip || null, seconds: WARMUP_SECONDS,
                label: 'Warm-up · ' + (i + 1) + ' of ' + WARMUP.length });
     });
 
     for (var r = 1; r <= ROUNDS; r++) {
       EXERCISES.forEach(function (ex, i) {
-        t.push({ kind: 'work', name: ex.name, cue: ex.cue,
-                 media: ex.media, clip: ex.clip, seconds: s.work,
+        t.push({ kind: 'work', name: ex.name, cue: ex.cue, clip: ex.clip, seconds: s.work,
                  label: 'Round ' + r + ' · ' + (i + 1) + ' of ' + EXERCISES.length });
-        t.push({ kind: 'recover', name: RECOVER.name, cue: RECOVER.cue, media: null, clip: RECOVER.clip, seconds: s.rest,
+        t.push({ kind: 'recover', name: RECOVER.name, cue: RECOVER.cue, clip: RECOVER.clip, seconds: s.rest,
                  label: 'Round ' + r + ' · recover' });
       });
       if (r < ROUNDS) {
-        t.push({ kind: 'break', name: BREAK.name, cue: BREAK.cue,
-                 media: null, clip: null, seconds: s.waterBreak, label: 'Water break' });
+        t.push({ kind: 'break', name: BREAK.name, cue: BREAK.cue, clip: null, seconds: s.waterBreak, label: 'Water break' });
       }
     }
 
     COOLDOWN.forEach(function (c, i) {
-      t.push({ kind: 'cooldown', name: c.name, cue: c.cue,
-               media: null, clip: c.clip || null, seconds: COOLDOWN_SECONDS,
+      t.push({ kind: 'cooldown', name: c.name, cue: c.cue, clip: c.clip || null, seconds: COOLDOWN_SECONDS,
                label: 'Cool-down · ' + (i + 1) + ' of ' + COOLDOWN.length });
     });
 
@@ -298,217 +285,59 @@
   }
 
   /* ==========================================================
-     6b. YouTube exercise clips
+     6b. Exercise clips
      ----------------------------------------------------------
-     One source video seeked to a per-exercise window, muted and
-     looping. This is decoration, never a dependency: if the API
-     fails to load, the network is down, or embedding is disabled
-     on the video, the panel falls back to a local media loop if one
-     exists and otherwise collapses, and the workout runs as before.
+     Plain local video files: muted, looping natively via the loop
+     attribute, no controls, no third party. Changing exercise is a
+     src swap. This replaces an earlier YouTube embed and with it
+     every problem that came from someone else's player — ads,
+     branding, captions, and the network dependency.
      ========================================================== */
 
-  var yt = {
-    player: null,
-    ready: false,
-    failed: false,
-    clip: null,        // clip currently loaded
-    loopTimer: null,
-    paused: false,
-    inAd: false,
-    adStreak: 0
-  };
+  var clipSrc = null;
+  var clipFailed = {};      // filename -> true, so a missing file is not retried
 
-  function sameClip(a, b) {
-    return !!a && !!b && a[0] === b[0] && a[1] === b[1];
+  function clipUsable(file) {
+    return !!(file && !clipFailed[file] && el.video);
   }
 
-  function ytUsable() {
-    return yt.ready && !yt.failed && !!yt.player;
-  }
-
-  function loadYouTube() {
-    if (window.YT && window.YT.Player) { createYtPlayer(); return; }
-
-    var prev = window.onYouTubeIframeAPIReady;
-    window.onYouTubeIframeAPIReady = function () {
-      if (typeof prev === 'function') { try { prev(); } catch (e) {} }
-      createYtPlayer();
-    };
-
-    var tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
-    tag.async = true;
-    tag.onerror = function () { yt.failed = true; refreshVisual(); };
-    document.head.appendChild(tag);
-
-    // Offline or blocked: stop waiting and run without video.
-    setTimeout(function () {
-      if (!yt.ready) { yt.failed = true; refreshVisual(); }
-    }, 10000);
-  }
-
-  function createYtPlayer() {
-    if (yt.player) return;
-    try {
-      yt.player = new window.YT.Player('yt-player', {
-        videoId: VIDEO_ID,
-        playerVars: {
-          autoplay: 0, controls: 0, disablekb: 1, fs: 0,
-          rel: 0, playsinline: 1, iv_load_policy: 3, modestbranding: 1,
-          cc_load_policy: 0, cc_lang_pref: 'none', annotations: 3
-        },
-        events: {
-          onReady: function (e) {
-            yt.ready = true;
-            yt.failed = false;
-            try { e.target.mute(); } catch (err) {}
-            killCaptions();
-            refreshVisual();
-          },
-          onError: function () {
-            // Embedding disabled, bad id, or region block: fall back for good.
-            yt.failed = true;
-            stopClipLoop();
-            refreshVisual();
-          },
-          onStateChange: function (e) {
-            if (e.data === window.YT.PlayerState.PLAYING) killCaptionsOnce();
-            // Backstop only; the poll below normally loops before ENDED fires.
-            if (e.data === window.YT.PlayerState.ENDED && yt.clip) {
-              seekClipStart();
-            }
-          }
-        }
-      });
-    } catch (e) {
-      yt.failed = true;
+  function playClip(file) {
+    var v = el.video;
+    if (!v || !file) return;
+    var url = CLIP_DIR + file;
+    if (clipSrc !== url) {
+      clipSrc = url;
+      v.src = url;
+      try { v.load(); } catch (e) {}
     }
-  }
-
-  /* Captions are burned over the bottom of the frame and reappear on each
-     load, so unload the module every time rather than trusting the
-     cc_load_policy player var, which a viewer's global caption setting
-     overrides. Both module names are tried; which one applies varies. */
-  var captionKillTimers = [];
-
-  function killCaptionsOnce() {
-    if (!yt.player) return;
-    ['captions', 'cc'].forEach(function (m) {
-      try { yt.player.unloadModule(m); } catch (e) {}
-      // Belt and braces: on some player builds unloadModule alone is undone
-      // when the module re-initialises, but clearing the track sticks.
-      try { yt.player.setOption(m, 'track', {}); } catch (e) {}
-    });
-  }
-
-  /* The captions module reloads asynchronously after loadVideoById, so a
-     single call at load time is regularly too early and the subtitles come
-     back a second later. Retry across the window in which it re-initialises. */
-  function killCaptions() {
-    killCaptionsOnce();
-    captionKillTimers.forEach(clearTimeout);
-    captionKillTimers = [300, 800, 1500, 2500, 4000].map(function (ms) {
-      return setTimeout(killCaptionsOnce, ms);
-    });
-  }
-
-  function seekClipStart() {
-    if (!ytUsable() || !yt.clip) return;
-    try {
-      yt.player.seekTo(yt.clip[0], true);
-      if (!yt.paused) yt.player.playVideo();
-    } catch (e) {}
-  }
-
-  /* Poll and seek back just before the end point. Letting the player reach
-     endSeconds fires ENDED and produces a visible black flash on every loop,
-     which over a 45s interval happens four or five times. */
-  function setAdVisible(on) {
-    if (yt.inAd === on) return;
-    yt.inAd = on;
-    setHidden(el.adHint, !on);
-  }
-
-  function startClipLoop() {
-    stopClipLoop();
-    yt.loopTimer = setInterval(function () {
-      if (!ytUsable() || !yt.clip || yt.paused) return;
-      try {
-        var dur = yt.player.getDuration();
-
-        /* An ad hijacks the player: getDuration() switches to the ad's
-           length. Require two consecutive polls so a momentary 0 during
-           loading cannot flash the notice. */
-        var looksLikeAd = dur > 0 && Math.abs(dur - VIDEO_DURATION) > 5;
-        yt.adStreak = looksLikeAd ? yt.adStreak + 1 : 0;
-        setAdVisible(yt.adStreak >= 2);
-
-        if (yt.inAd) return;   // never seek or re-play during an ad
-
-        var t = yt.player.getCurrentTime();
-        if (t >= yt.clip[1] - 0.3 || t < yt.clip[0] - 1.5) {
-          yt.player.seekTo(yt.clip[0], true);
-        }
-
-        /* The player is tappable so "Skip Ad" can be reached, which means a
-           stray tap can also pause the demo. Put it back. */
-        var st = yt.player.getPlayerState();
-        if (st === window.YT.PlayerState.PAUSED && state.running) {
-          yt.player.playVideo();
-        }
-      } catch (e) {}
-    }, 200);
-  }
-
-  function stopClipLoop() {
-    if (yt.loopTimer) { clearInterval(yt.loopTimer); yt.loopTimer = null; }
-  }
-
-  function playClip(clip) {
-    if (!ytUsable() || !clip) return;
-    yt.clip = clip;
-    yt.paused = false;
-    yt.adStreak = 0;
-    setAdVisible(false);
-    try {
-      yt.player.mute();
-      yt.player.loadVideoById({
-        videoId: VIDEO_ID,
-        startSeconds: clip[0],
-        suggestedQuality: 'medium'
-      });
-      killCaptions();
-      startClipLoop();
-    } catch (e) {
-      yt.failed = true;
-      refreshVisual();
-    }
+    v.muted = true;         // iOS refuses to autoplay anything unmuted
+    var p;
+    try { p = v.play(); } catch (e) { return; }
+    // A rejected play promise is normal (autoplay policy, or a src swap
+    // mid-play) and must not surface as an unhandled rejection.
+    if (p && p.catch) p.catch(function () {});
   }
 
   function pauseClip() {
-    yt.paused = true;
-    yt.adStreak = 0;
-    setAdVisible(false);
-    stopClipLoop();
-    if (!ytUsable()) return;
-    try { yt.player.pauseVideo(); } catch (e) {}
+    try { el.video.pause(); } catch (e) {}
   }
 
   function resumeClip() {
-    if (!ytUsable() || !yt.clip) return;
-    yt.paused = false;
-    try { yt.player.mute(); yt.player.playVideo(); } catch (e) {}
-    startClipLoop();
+    if (!clipSrc) return;
+    playClipCurrent();
+  }
+
+  function playClipCurrent() {
+    var v = el.video;
+    if (!v) return;
+    v.muted = true;
+    var p;
+    try { p = v.play(); } catch (e) { return; }
+    if (p && p.catch) p.catch(function () {});
   }
 
   function stopClip() {
-    yt.clip = null;
-    yt.paused = false;
-    yt.adStreak = 0;
-    setAdVisible(false);
-    stopClipLoop();
-    if (!ytUsable()) return;
-    try { yt.player.pauseVideo(); } catch (e) {}
+    pauseClip();
   }
 
   /* ==========================================================
@@ -723,9 +552,7 @@
     next:    $('wo-next'),
     media:   $('wo-media'),
     mediaBox: document.querySelector('.media-box'),
-    pausedCard: $('paused-card'),
-    videoBox: $('video-box'),
-    adHint:  $('ad-hint'),
+    video:   $('ex-video'),
     ringFill: $('ring-fill'),
     toggle:  $('btn-toggle'),
 
@@ -838,11 +665,6 @@
      10. Painting
      ========================================================== */
 
-  var mediaWanted = null;
-
-  /* `hidden` is an HTMLElement IDL property — SVGElement does not have it, so
-     `svg.hidden = true` sets a JS expando and the element keeps rendering.
-     Toggling the attribute works for both. */
   function setHidden(node, on) {
     if (on) node.setAttribute('hidden', '');
     else node.removeAttribute('hidden');
@@ -866,62 +688,23 @@
     applyVisual(s);
   }
 
-  /* Visual priority: YouTube clip, then a local media loop, then nothing —
-     in which case the panel collapses and the name and cue carry the
-     instruction on their own.
-
-     Video shows only while the clock runs. A paused YouTube player replaces
-     the frame with its own chrome — title bar, play button, share, "More
-     videos" thumbnails, and the captions come back — so pausing swaps to a
-     plain card of the same size instead. */
+  /* Video or nothing. A local file has no player UI to leak through, so
+     unlike the old embed the frame can simply stay on screen while paused —
+     frozen on the movement, which reads better than a placeholder. */
   function applyVisual(s) {
-    var useVideo   = !!(s.clip && ytUsable() && state.running);
-    var showPaused = !!(s.clip && ytUsable() && !state.running);
+    var file = s.clip || null;
+    var show = clipUsable(file);
 
-    setHidden(el.videoBox, !useVideo);
-    setHidden(el.pausedCard, !showPaused);
-
-    if (useVideo || showPaused) {
-      el.mediaBox.classList.remove('is-empty');
-      setHidden(el.media, true);
-      el.media.onload = el.media.onerror = null;
-      el.media.removeAttribute('src');
-      mediaWanted = null;
-      if (useVideo) {
-        if (!sameClip(yt.clip, s.clip)) playClip(s.clip);
-        else if (yt.paused) resumeClip();
-      }
-      return;
+    setHidden(el.video, !show);
+    if (el.mediaBox) {
+      if (show) el.mediaBox.classList.remove('is-empty');
+      else el.mediaBox.classList.add('is-empty');
     }
 
-    // Not showing video on this segment — don't leave it playing unseen.
-    stopClip();
+    if (!show) { pauseClip(); return; }
 
-    /* `want` guards against a slow image resolving after she has already
-       skipped on — without it a late onload would show the wrong exercise. */
-    var want = s.media || null;
-    mediaWanted = want;
-    el.media.onload = el.media.onerror = null;
-
-    if (want) {
-      setHidden(el.media, true);
-      el.mediaBox.classList.add('is-empty');
-      el.media.onload = function () {
-        if (mediaWanted !== want) return;
-        setHidden(el.media, false);
-        el.mediaBox.classList.remove('is-empty');
-      };
-      el.media.onerror = function () {
-        if (mediaWanted !== want) return;
-        setHidden(el.media, true);
-        el.mediaBox.classList.add('is-empty');
-      };
-      el.media.src = want;
-    } else {
-      setHidden(el.media, true);
-      el.media.removeAttribute('src');
-      el.mediaBox.classList.add('is-empty');
-    }
+    playClip(file);
+    if (!state.running) pauseClip();
   }
 
   /* Re-run the visual choice for the segment on screen. Called when the
@@ -1381,7 +1164,15 @@
   if (!speechOK) el.rowVoice.hidden = true;
   el.ringFill.style.strokeDasharray = RING_C.toFixed(1);
 
-  loadYouTube();
+  /* A missing or unplayable clip collapses the panel for that segment
+     instead of showing a broken element. */
+  if (el.video) {
+    el.video.addEventListener('error', function () {
+      var f = clipSrc && clipSrc.replace(CLIP_DIR, '');
+      if (f) clipFailed[f] = true;
+      refreshVisual();
+    }, true);
+  }
   loadSyncCfg();
   if (bootstrapFromHash()) showBootstrapped();
 

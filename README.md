@@ -6,8 +6,8 @@ video demonstrations, and big buttons that work at arm's length in a living room
 **22 minutes** — 2 min warm-up · 2 rounds of 8 exercises (45s work / 15s march) · 1 min water
 break · 3 min cool-down.
 
-No build step, no bundler, no npm. Four files and a folder. The only external dependency is the
-YouTube IFrame API, loaded at runtime and non-fatal if it fails.
+No build step, no bundler, no npm, and no external dependencies at all. Four files, a folder of
+short video clips, and it runs entirely offline.
 
 ---
 
@@ -55,7 +55,7 @@ index.html    markup: 3 screens, 2 panels, the video panel
 styles.css    palette, layout, orientation handling
 config.js     stays blank — sync config lives on the device, not the repo
 app.js        data, timeline, timer, audio, wake lock, storage, sync
-media/        optional exercise loops — see media/README.md
+media/        14 exercise clips, ~1.2MB total — see media/README.md
 ```
 
 The Apps Script source and its setup guide are kept outside this repo as local notes, so the
@@ -67,42 +67,32 @@ the total duration are all derived from them.
 
 ## Exercise videos
 
-Each exercise shows a short looping clip of the movement, muted, pulled from a single source video
-via the YouTube IFrame API. The clip is seeked to that exercise's window and looped for the whole
-interval.
+Each exercise shows a short looping clip of the movement, muted, played from a local file in
+`media/`. There is no player UI, no network request, and nothing to tap — a plain `<video>` element
+with `muted loop playsinline` and no `controls` attribute.
 
-Every warm-up, exercise, and cool-down segment has a clip — 26 of the 43 segments. The 15-second
-recovery marches and the water break deliberately show no video: it is a rest she does not need
-demonstrated, and reloading the player between every exercise is churn. Those segments collapse the
-panel and lean on the name, cue, and "Next up" preview instead.
+Every warm-up, exercise, and cool-down segment has a clip — 26 of the 43 segments, drawn from 14
+files. The 15-second recovery marches and the water break deliberately show nothing: it is a rest
+that does not need demonstrating. Those segments collapse the panel and lean on the name, cue, and
+"Next up" preview instead.
 
-Clips are defined at the top of `app.js`:
+Clips are mapped at the top of `app.js`:
 
 ```js
-var VIDEO_ID = 'HP_P-A3crw4';
-var CLIPS = { 'half-jacks': [628, 638], ... };   // [startSeconds, endSeconds]
+var CLIPS = { 'half-jacks': 'half-jacks.mp4', ... };
 ```
 
-To retime a clip or point at a different video, edit those values. Nothing else needs to change.
+To swap a clip, drop a new file in `media/` and point the entry at it. A file that is missing or
+will not play collapses that segment's panel rather than showing a broken element.
 
-**The warm-up and cool-down were both matched to the source footage**, so each clip shows the
-movement its cue describes. They were originally written independently of the video and have been
-reshaped to fit what it actually demonstrates.
+**These replaced a YouTube embed**, and with it every problem that came from running someone else's
+player: ads that could interrupt mid-exercise, branding and title overlays, captions burning
+themselves over the frame, and a hard dependency on the network. See `media/README.md` for how the
+clips were produced.
 
-Two caveats. The leg she demonstrates on screen will not always be the side the cue names — the cue
-is authoritative. And the warm-up clips were identified by stepping through the video frame by
-frame, so give them a quick look before she uses this in earnest.
-
-**Video is decoration, never a dependency.** If the API fails to load, the device is offline, or
-embedding is disabled on the video, the panel falls back to a local loop from `media/` if one
-exists and otherwise collapses — the timer, audio cues, and history all run exactly the same. The
-player is also hidden while paused, because a paused YouTube frame fills with its own title bar,
-play button, and suggested-video thumbnails.
-
-### Local loops
-
-`media/` still works as an offline fallback. Drop in `half-jacks.webp` and it is used whenever the
-video is unavailable. See `media/README.md`. The folder ships empty.
+Two notes on the footage. The leg demonstrated on screen will not always be the side a cool-down cue
+names — the cue is authoritative. And the source's own countdown ring is still visible in the
+top-left of each clip; cropping far enough to remove it wrecks the framing.
 
 ## Google Sheets sync
 
@@ -136,18 +126,5 @@ with retry. It runs identically with the wifi off.
   itself.
 - **Timing is clock-based**, not tick-counted, so backgrounding the tab mid-workout and coming
   back doesn't leave the timer minutes behind.
-- **Ads.** Embedded YouTube can serve ads, which replace the clip mid-interval. There is no player
-  parameter that prevents this. When one is detected the panel shows a notice across the top of the
-  player, and **the player stays tappable so YouTube's own "Skip" button can be reached** — an
-  earlier version blocked taps to stop her opening YouTube by accident, which also made ads
-  unskippable. If she ignores the ad entirely the timer, audio cues, and history are unaffected and
-  the clip returns by itself when the ad ends.
-
-  Because the player is tappable, a stray tap can pause the demo. The clip poller notices a
-  playback state of PAUSED while the workout is running and restarts it within a fifth of a second,
-  so this self-corrects.
-
-  Ads are inherent to embedding someone else's monetised video. Populating `media/` with local
-  loops is the only way to eliminate them outright.
-- **Captions are force-disabled** on every clip load, since they render over the bottom of the
-  frame and reappear each time a video is loaded.
+- **Fully offline.** Nothing is fetched at runtime. Once the page and clips are cached she can work
+  out with the wifi off.

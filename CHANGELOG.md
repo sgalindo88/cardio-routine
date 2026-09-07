@@ -7,6 +7,43 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.3.0] — 2026-09-07
+
+Exercise demonstrations moved from a YouTube embed to local video files.
+
+### Changed
+
+- **Clips are now local files** in `media/` — fourteen of them, about 1.2 MB in total, cut from the
+  source video with `src-files/extract-clips.sh`. Playback is a plain `<video muted loop
+  playsinline>` with no `controls` attribute, so the element is inert to taps and has no player UI.
+- The frame now **stays on screen while paused**, frozen on the movement. The placeholder card
+  existed only because a paused YouTube player filled with its own chrome.
+
+### Removed
+
+- **The entire YouTube integration**, and with it every problem that came from running someone
+  else's player: ads interrupting mid-exercise, the unskippable-ad bug from 1.2.1, branding and
+  title overlays, captions burning over the frame, the iframe crop that hid them, ad detection, the
+  loop poller, and the tap-recovery workaround. Native `loop` replaces the poller entirely.
+- The local `.webp` image tier, which existed as a fallback for the embed and is now redundant.
+- The last external dependency. Nothing is fetched at runtime; the app runs fully offline.
+
+### Fixed
+
+- `object-fit: cover` combined with a forced `16/9` box was silently re-cropping clips that are
+  encoded at 480×276, trimming the top edge. The box now follows the clip's own aspect ratio.
+
+### Notes
+
+- Clips are cropped at the bottom-right corner only, removing the source's burned-in remaining-time
+  readout, which otherwise sat beside our timer showing a different number. Cropping from that one
+  corner keeps her feet in frame and leaves the source's countdown ring in the top-left whole; a
+  centred crop clips it into a fragment that looks worse than leaving it be.
+- The source video stays outside the repository. Only the ~2 minutes of footage the app plays is
+  extracted.
+
+---
+
 ## [1.2.1] — 2026-09-07
 
 ### Fixed
