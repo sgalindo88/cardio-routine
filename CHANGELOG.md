@@ -7,6 +7,51 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.3.0] — 2026-09-11
+
+### Added
+
+- **Badges sync to the Sheet.** A new `awards` row type, one row per badge as it is earned:
+  `timestamp | date | time | badge_id | name | family | device | app_version`. Requires the updated
+  `sheets/Code.gs` to be pasted in and redeployed — the app's rows are rejected as
+  `unknown type: awards` until then, and a rejected row stays queued and retries, so nothing is
+  lost by updating the two in either order.
+- Badges credited by the one-time backfill are deliberately not sent. `finish()` only queues what
+  that session crossed, so an existing user does not blast a burst of rows for sessions the sheet
+  already holds. Each badge is queued as its own row, so a partial send never loses one.
+
+### Fixed
+
+- **Rows queued while a sync was in flight were silently destroyed.** `flush()` snapshots the
+  outbox, and on success `done()` saved `[]` over the whole thing — discarding anything appended
+  after the snapshot was taken. This is not theoretical and not new: any settings change made while
+  a history row was in the air has been vanishing since sync shipped. Badges made it constant,
+  because `finish()` queues the history row (which starts a flush) and then a row per badge
+  microseconds later. Caught by the end-to-end test: the badge appeared on screen, the sheet got
+  nothing, and the outbox read empty. `done()` now trims the *current* outbox by the number
+  actually sent and re-flushes if anything is left.
+- **`sheets/Code.gs`: a malformed `ended_at` reached `Utilities.formatDate` unguarded.** Found
+  while testing the live endpoint — posting `ended_at: "not-a-date"` returned `ok:true`, so it was
+  either writing a junk cell or relying on luck. A `safeDate()` helper now falls back to the row's
+  own timestamp for anything that is not a real date, and both `history` and `awards` use it.
+
+### Notes
+
+- Verified against the live deployment: ping, `history`, `settings`, bad token, unknown type, empty
+  body, malformed JSON, the 4096-byte cap, hostile numbers, and over-long device and version
+  strings. End to end through the app: Save, Test, a settings change, a completed session, and an
+  offline session that queued and then drained itself on reconnect. All requests go out as
+  `text/plain;charset=utf-8` — `application/json` would add a CORS preflight Apps Script cannot
+  answer, and every write would fail.
+- The endpoint is write-only by design, so these tests confirm the script accepted each row without
+  throwing; they cannot confirm the stored cell values.
+- The queue-during-flush fix is verified against the live endpoint by parking the counters one
+  session short of three thresholds at once: finishing sends `history` plus three `awards` rows,
+  all three badges show on screen, and the outbox drains to zero. Before the fix the same run sent
+  `history` alone.
+
+---
+
 ## [2.2.0] — 2026-09-11
 
 ### Added

@@ -456,9 +456,19 @@
       }
       function done(allSent) {
         self._busy = false;
-        self._save(allSent ? [] : rows.slice(i));
+        /* Trim by how many were actually sent, against the outbox as it stands
+           now — not against the snapshot. Anything queued while this flush was
+           in flight is in the outbox but not in `rows`, and saving the
+           snapshot's leftovers silently destroyed it. That is not theoretical:
+           a session queues its history row, which starts a flush, then queues a
+           row per badge earned microseconds later, and every one of those was
+           being dropped. `i` equals rows.length on success and the number sent
+           on failure, so one expression covers both. */
+        var remaining = self._outbox().slice(i);
+        self._save(remaining);
         if (i > 0) LS.set(K.lastSync, Date.now());
         renderSyncStatus();
+        if (allSent && remaining.length) self.flush();
       }
       step();
     },
@@ -1069,6 +1079,19 @@
       work_sec: settings.work,
       rest_sec: settings.rest,
       break_sec: settings.waterBreak
+    });
+
+    /* One row per badge, as it is earned. Only badges this session crossed
+       reach here — the one-time backfill discards its result, so an existing
+       user does not blast a burst of rows for sessions the sheet already has.
+       Each is queued separately so a badge is never lost to a partial send. */
+    freshAwards.forEach(function (b) {
+      Sync.queue('awards', {
+        badge_id: b.id,
+        name: b.name,
+        family: b.family,
+        earned_at: entry.endedAt
+      });
     });
 
     el.finTime.textContent = fmtClock(durationSec) + ' of movement';

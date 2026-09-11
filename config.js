@@ -21,5 +21,5 @@
 window.CARDIO_CONFIG = {
   syncUrl: '',
   syncToken: '',
-  appVersion: '2.2.0'
+  appVersion: '2.3.0'
 };

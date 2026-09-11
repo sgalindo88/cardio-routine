@@ -81,8 +81,11 @@ by UTC puts a 9pm session on the following day anywhere behind UTC, which would 
 falsely extend one. Day numbers go through `Date.UTC()` on the local components, so DST cannot
 shift them either.
 
-Badges are not sent to the Sheet — the Apps Script that receives those rows lives outside this
-repo and would need a matching change first.
+Badges are sent to the Sheet as an `awards` row each time one is earned, if sync is configured.
+That needs the `awards` type in `sheets/Code.gs`, pasted into the Apps Script editor and
+redeployed; until then those rows come back `unknown type: awards`, stay queued, and retry — so
+updating the app and the script in either order loses nothing. Badges credited by the one-time
+backfill are not sent, since the sheet already has the sessions behind them.
 
 ## Files
 
