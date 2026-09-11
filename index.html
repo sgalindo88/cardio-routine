@@ -11,7 +11,7 @@
 <body data-kind="idle">
 
 <!-- ══════════════ START ══════════════ -->
-<section id="screen-start" class="screen screen-pad">
+<section id="screen-start" class="screen screen-scroll">
   <div class="stack-center">
     <h1 class="title">Cardio Routine</h1>
     <p class="subtitle" id="start-summary">2 rounds &middot; 8 exercises</p>
@@ -21,6 +21,11 @@
       <button id="btn-open-history" class="btn btn-quiet">History</button>
     </div>
   </div>
+
+  <!-- Every exercise in the session, in order. Built from the same arrays and
+       settings the timeline is, so the durations here cannot drift from what
+       actually runs. -->
+  <div id="start-plan" class="plan"></div>
 </section>
 
 <!-- ══════════════ WORKOUT ══════════════ -->

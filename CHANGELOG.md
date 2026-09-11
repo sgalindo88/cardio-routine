@@ -7,6 +7,42 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.1.0] — 2026-09-11
+
+### Added
+
+- **The full session plan on the start screen**, below the existing block: every exercise she will
+  do, in order, with its duration. Grouped into Warm-up, Workout and Cool-down, each group showing
+  its own running time.
+  - Built from the same `WARMUP` / `EXERCISES` / `COOLDOWN` arrays and the same `settings` object
+    `buildTimeline()` reads, so the list cannot drift from what actually runs. Verified: the three
+    group durations sum to `timelineSeconds(buildTimeline(settings))` exactly, and stay equal after
+    changing work, recover and water-break in the settings panel.
+  - `renderPlan()` hangs off `renderStartSummary()`, which the settings panel already calls, so
+    durations and the note update live as she adjusts them.
+  - Group headings take the colour that group will show during the session — coral for the working
+    intervals, calm for warm-up and cool-down — so the list previews the colour coding rather than
+    introducing a third scheme.
+
+### Changed
+
+- **The start screen scrolls now**; it is the only one that does. `justify-content` stays
+  `flex-start` there deliberately: centring a flex column that overflows puts the top of it out of
+  reach. Checked at 320×568 and 390×844 that the title is visible at rest and the last row is
+  reachable at the bottom.
+
+### Notes
+
+- Distinct exercises only. The routine also contains sixteen 15-second recovery marches and a water
+  break; listing those as rows would treble the length of the list with repeats of a single line,
+  so they are named in the Workout group's note instead ("2 rounds of these 8, with 15s marching
+  between each and a 60s water break between rounds").
+- No thumbnails, unlike the reference app's list. The clips are video with no poster images, and
+  generating a tier of stills would add fourteen assets for a screen that is read once per session.
+  Worth revisiting if the list ever needs to be scannable at a glance rather than read.
+
+---
+
 ## [2.0.0] — 2026-09-11
 
 Restyled after a commercial fitness app, from a reference video. The countdown ring is gone, the

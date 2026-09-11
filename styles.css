@@ -61,6 +61,17 @@ body{
 }
 .screen-pad{ align-items:center; justify-content:center; }
 
+/* The start screen carries the full exercise list, so it is the one screen
+   that scrolls. justify-content stays flex-start deliberately: centring a
+   flex column that overflows makes the top of it unreachable. */
+.screen-scroll{
+  align-items:center; justify-content:flex-start;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  gap:26px;
+}
+.screen-scroll > *{ flex:0 0 auto; }
+.screen-scroll .stack-center{ padding-top:clamp(20px,6vh,64px); }
+
 .stack-center{
   display:flex; flex-direction:column; align-items:center; gap:22px;
   text-align:center; width:100%; max-width:560px;
@@ -297,6 +308,45 @@ body{
   .next-up{ font-size:clamp(1rem,4vmin,1.2rem); }
   .controls{ padding:6px 0; }
   .progress-btn{ height:50px; border-radius:25px; }
+}
+
+/* ---------- start screen: the session plan ----------
+   Every exercise she will do, in order. Group headings take the colour that
+   group will actually show during the session — coral for the working
+   intervals, calm for the warm-up and cool-down — so the list previews the
+   colour coding rather than inventing a third scheme. */
+.plan{ width:100%; max-width:560px; }
+.plan-group + .plan-group{ margin-top:24px; }
+
+.plan-head{
+  display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  margin:0 0 10px; padding:0 4px;
+  font-size:clamp(1.05rem,4vmin,1.25rem); font-weight:800;
+  text-transform:uppercase; letter-spacing:.05em;
+}
+.plan-calm .plan-head{ color:var(--calm); }
+.plan-work .plan-head{ color:var(--coral); }
+.plan-dur{
+  color:var(--muted); font-weight:700;
+  text-transform:none; letter-spacing:0; font-variant-numeric:tabular-nums;
+}
+
+.plan-list{
+  list-style:none; margin:0; padding:0;
+  display:flex; flex-direction:column; gap:6px;
+}
+.plan-list li{
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  background:var(--surface); border-radius:14px; padding:14px 16px;
+}
+.plan-name{ font-weight:700; font-size:1.15rem; line-height:1.25; }
+.plan-secs{
+  flex:0 0 auto; color:var(--muted); font-weight:700;
+  font-size:1.05rem; font-variant-numeric:tabular-nums;
+}
+.plan-note{
+  margin:10px 4px 0; color:var(--muted);
+  font-size:1.05rem; line-height:1.35;
 }
 
 /* ---------- panels ---------- */

@@ -46,6 +46,12 @@ address bar eating vertical space.
 | **+15** | Adds 15 seconds to the interval on screen — handy on a rest that needs to be longer |
 | **X**, top left | Ends the workout and returns to the start. Nothing is recorded |
 
+**The start screen** lists every exercise in the session, in order and with durations, grouped into
+warm-up, workout and cool-down. The list is generated from the same arrays and settings the
+timeline is built from, so it cannot fall out of step with what actually runs — change a duration
+in Settings and the list updates with it. Editing the `EXERCISES`, `WARMUP` or `COOLDOWN` arrays
+updates the list automatically too; there is no second copy to maintain.
+
 **Settings** adjusts work / recover / water-break durations, and toggles the countdown beeps and
 the spoken cues independently. Changes are remembered.
 

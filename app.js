@@ -543,6 +543,7 @@
     pHistory:   $('panel-history'),
 
     startSummary: $('start-summary'),
+    startPlan:    $('start-plan'),
     label:   $('wo-label'),
     total:   $('wo-total'),
     seconds: $('wo-seconds'),
@@ -935,11 +936,89 @@
     el.syncStatus.textContent = text;
   }
 
+  /* The exercise list on the start screen. Built from the same arrays and the
+     same settings object buildTimeline() reads, so the two cannot disagree
+     about what runs or for how long.
+
+     Distinct exercises only: the routine also contains sixteen 15-second
+     recovery marches and a water break, and listing those as rows would treble
+     the length of the list with repeats of one line. They are named in each
+     group's note instead. */
+  function planGroups() {
+    var perRound = EXERCISES.length * (settings.work + settings.rest);
+    return [
+      { title: 'Warm-up', tone: 'calm',
+        seconds: WARMUP.length * WARMUP_SECONDS,
+        each: WARMUP_SECONDS,
+        items: WARMUP,
+        note: null },
+      { title: 'Workout', tone: 'work',
+        seconds: ROUNDS * perRound + (ROUNDS - 1) * settings.waterBreak,
+        each: settings.work,
+        items: EXERCISES,
+        note: ROUNDS + ' rounds of these ' + EXERCISES.length + ', with ' +
+              settings.rest + 's marching between each' +
+              (ROUNDS > 1 ? ' and a ' + settings.waterBreak + 's water break between rounds' : '') +
+              '.' },
+      { title: 'Cool-down', tone: 'calm',
+        seconds: COOLDOWN.length * COOLDOWN_SECONDS,
+        each: COOLDOWN_SECONDS,
+        items: COOLDOWN,
+        note: null }
+    ];
+  }
+
+  function renderPlan() {
+    if (!el.startPlan) return;
+    el.startPlan.innerHTML = '';
+
+    planGroups().forEach(function (g) {
+      var sec = document.createElement('section');
+      sec.className = 'plan-group plan-' + g.tone;
+
+      var head = document.createElement('h2');
+      head.className = 'plan-head';
+      var ht = document.createElement('span');
+      ht.textContent = g.title;
+      var hd = document.createElement('span');
+      hd.className = 'plan-dur';
+      hd.textContent = fmtClock(g.seconds);
+      head.appendChild(ht);
+      head.appendChild(hd);
+      sec.appendChild(head);
+
+      var ol = document.createElement('ol');
+      ol.className = 'plan-list';
+      g.items.forEach(function (it) {
+        var li = document.createElement('li');
+        var nm = document.createElement('span');
+        nm.className = 'plan-name';
+        nm.textContent = it.name;
+        var sc = document.createElement('span');
+        sc.className = 'plan-secs';
+        sc.textContent = g.each + 's';
+        li.appendChild(nm);
+        li.appendChild(sc);
+        ol.appendChild(li);
+      });
+      sec.appendChild(ol);
+
+      if (g.note) {
+        var p = document.createElement('p');
+        p.className = 'plan-note';
+        p.textContent = g.note;
+        sec.appendChild(p);
+      }
+      el.startPlan.appendChild(sec);
+    });
+  }
+
   function renderStartSummary() {
     var mins = Math.round(timelineSeconds(buildTimeline(settings)) / 60);
     el.startSummary.textContent =
       mins + ' minutes · ' + ROUNDS + ' rounds · ' + settings.work + 's work / ' +
       settings.rest + 's recover';
+    renderPlan();
   }
 
   function bump(key, delta) {
