@@ -349,6 +349,79 @@ body{
   font-size:1.05rem; line-height:1.35;
 }
 
+/* ---------- badges ----------
+   Four accents, one per achievement family. They live only in the badge grid
+   and on the finished screen — the workout screen keeps its strict two. */
+.sprite{ position:absolute; width:0; height:0; overflow:hidden; }
+
+.awards{ margin:4px 0 18px; }
+.aw-milestone  { --aw:var(--coral); }
+.aw-streak     { --aw:#C2711C; }
+.aw-consistency{ --aw:var(--calm); }
+.aw-time       { --aw:#42648C; }
+
+.awards-grid{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr));
+  gap:8px; margin-bottom:14px;
+}
+.awards-grid:empty{ display:none; }
+
+.aw{
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  background:var(--surface); border-radius:16px; padding:14px 8px;
+  text-align:center;
+}
+.aw-icon{
+  width:34px; height:34px; flex:0 0 auto;
+  fill:none; stroke:var(--aw); stroke-width:1.9;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+.aw-name{ font-size:.92rem; font-weight:700; line-height:1.2; }
+.aw-locked{ opacity:.35; }
+.aw-locked .aw-icon{ stroke:var(--muted); }
+
+/* ---- next up, with a meter ---- */
+.aw-next{ margin-bottom:10px; padding:0 2px; }
+.aw-next-top{
+  display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+  font-size:1rem; font-weight:700; margin-bottom:6px;
+}
+.aw-next-count{ color:var(--muted); font-weight:700; font-variant-numeric:tabular-nums; }
+.aw-track{
+  height:8px; border-radius:4px; overflow:hidden;
+  background:rgba(23,20,15,.07);
+}
+.aw-fill{
+  display:block; height:100%;
+  background:var(--aw); transform-origin:left center;
+}
+.awards-note{
+  margin:14px 2px 0; color:var(--muted);
+  font-size:1rem; line-height:1.35;
+}
+
+/* ---- the reveal on the finished screen ---- */
+.fin-awards{
+  display:flex; flex-wrap:wrap; justify-content:center; gap:10px;
+  width:100%; max-width:340px;
+}
+.fin-awards .aw{ flex:0 1 140px; padding:16px 10px; }
+.fin-awards .aw-icon{ width:42px; height:42px; }
+.fin-awards .aw-name{ font-size:1rem; }
+
+@keyframes aw-pop{
+  0%  { opacity:0; transform:scale(.6); }
+  60% { opacity:1; transform:scale(1.08); }
+  100%{ opacity:1; transform:scale(1); }
+}
+.aw-new{
+  opacity:0;
+  animation:aw-pop .45s cubic-bezier(.2,.9,.3,1.2) forwards;
+}
+@media (prefers-reduced-motion:reduce){
+  .aw-new{ opacity:1; animation:none; }
+}
+
 /* ---------- panels ---------- */
 .panel{
   position:fixed; inset:0; z-index:20;

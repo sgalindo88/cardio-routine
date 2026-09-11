@@ -55,8 +55,34 @@ updates the list automatically too; there is no second copy to maintain.
 **Settings** adjusts work / recover / water-break durations, and toggles the countdown beeps and
 the spoken cues independently. Changes are remembered.
 
-**History** lists completed sessions. Only finished sessions are recorded — stopping early leaves
-no trace.
+**History** lists completed sessions, with her badges above them. Only finished sessions are
+recorded — stopping early leaves no trace.
+
+## Badges
+
+Eighteen badges across four families — sessions completed, runs, consistency across weeks and
+months, and total time moved — each with its own accent colour. The panel shows what she has earned
+and the next target in each family with a progress meter; newly earned ones animate in on the
+"Well done" screen.
+
+**A rest day does not break a run.** A run continues while sessions are no more than two days
+apart. This is deliberate: strict day-resets are where habit apps lose people, because a lost
+streak is felt far more sharply than it was ever enjoyed, and one miss easily becomes "might as
+well stop". A rest day is also the right call for a 65-year-old doing daily cardio.
+
+**Badge state is in `cardio.awards.v1`, not derived from history.** Totals and the run counter are
+incremented once per finished session and never recomputed; `earned` is append-only. This matters
+because history is capped at 200 entries and **Clear history** empties it — anything derived from
+history would quietly erase what she had earned. The consistency family is the one exception, since
+it is about how sessions spread over time; badges already earned still stay earned.
+
+All date maths uses the device's **local** calendar date, never the stored UTC timestamp. Bucketing
+by UTC puts a 9pm session on the following day anywhere behind UTC, which would break a run or
+falsely extend one. Day numbers go through `Date.UTC()` on the local components, so DST cannot
+shift them either.
+
+Badges are not sent to the Sheet — the Apps Script that receives those rows lives outside this
+repo and would need a matching change first.
 
 ## Files
 

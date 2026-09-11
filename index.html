@@ -10,6 +10,26 @@
 </head>
 <body data-kind="idle">
 
+<!-- Badge icons. One stroked line-art symbol per achievement family, drawn in
+     currentColor so the family accent comes from CSS. Kept as a 0x0 absolutely
+     positioned sprite rather than display:none, which breaks <use> in some
+     browsers. -->
+<svg class="sprite" aria-hidden="true" focusable="false" width="0" height="0">
+  <symbol id="ic-ring" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.6"/>
+  </symbol>
+  <symbol id="ic-flame" viewBox="0 0 24 24">
+    <path d="M12 21c3.3 0 6-2.3 6-5.5 0-4.1-3.5-5.6-3-9.5-2.6 1.3-4.5 3.5-4.5 5.8 0 1 .3 1.7.3 1.7S9.2 12.4 8.4 11.2C7.1 12.5 6 14 6 15.5 6 18.7 8.7 21 12 21z"/>
+  </symbol>
+  <symbol id="ic-calendar" viewBox="0 0 24 24">
+    <rect x="3" y="5" width="18" height="16" rx="3"/>
+    <path d="M8 3v4M16 3v4M3 10.5h18"/>
+  </symbol>
+  <symbol id="ic-clock" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9"/><path d="M12 6.8V12l3.6 2.1"/>
+  </symbol>
+</svg>
+
 <!-- ══════════════ START ══════════════ -->
 <section id="screen-start" class="screen screen-scroll">
   <div class="stack-center">
@@ -80,6 +100,8 @@
     <h1 class="title">Well done</h1>
     <p id="fin-time" class="subtitle"></p>
     <p id="fin-count" class="subtitle-small"></p>
+    <!-- Anything earned by this session animates in here. -->
+    <div id="fin-awards" class="fin-awards" hidden></div>
     <button id="btn-again" class="btn btn-primary btn-huge">Again</button>
     <div class="row-secondary">
       <button id="btn-done" class="btn btn-quiet">Done</button>
@@ -176,6 +198,14 @@
       <h2 class="panel-title">History</h2>
       <button id="btn-close-history" class="btn btn-round" aria-label="Close history">&times;</button>
     </header>
+    <section id="awards" class="awards" hidden>
+      <div id="awards-grid" class="awards-grid"></div>
+      <div id="awards-next" class="awards-next"></div>
+      <p id="awards-note" class="awards-note" hidden>
+        A rest day won&rsquo;t break your run. Two days off starts it over.
+      </p>
+    </section>
+
     <p id="hist-count" class="panel-note"></p>
     <ul id="hist-list" class="hist-list"></ul>
     <button id="btn-clear-hist" class="btn btn-quiet btn-danger">Clear history</button>

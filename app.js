@@ -109,7 +109,8 @@
     outbox:   'cardio.outbox.v1',
     device:   'cardio.device.v1',
     lastSync: 'cardio.lastsync.v1',
-    sync:     'cardio.sync.v1'
+    sync:     'cardio.sync.v1',
+    awards:   'cardio.awards.v1'
   };
 
   var LS = {
@@ -529,6 +530,166 @@
   }
 
   /* ==========================================================
+     7b. Awards
+     ------------------------------------------------------------
+     Badges are NOT derived from the history array, for two reasons:
+     history is capped at 200 entries, and "Clear history" empties it.
+     Either would silently erase what she has earned. Instead the
+     counters are incremented once per finished session and stored
+     separately, and `earned` is append-only — once earned, permanent.
+
+     The exception is the consistency family, which is about how
+     sessions are spread over weeks and months and so has to read the
+     history. Those degrade honestly: badges already earned stay
+     earned, only future evaluation restarts from an emptied array.
+     ========================================================== */
+
+  var FAMILIES = {
+    milestone:   { label: 'Sessions',    icon: 'ic-ring' },
+    streak:      { label: 'Run',         icon: 'ic-flame' },
+    consistency: { label: 'Consistency', icon: 'ic-calendar' },
+    time:        { label: 'Time moved',  icon: 'ic-clock' }
+  };
+
+  var BADGES = [
+    { id: 'm1',   family: 'milestone',   need: 1,     name: 'First one done' },
+    { id: 'm5',   family: 'milestone',   need: 5,     name: 'Five sessions' },
+    { id: 'm10',  family: 'milestone',   need: 10,    name: 'Ten sessions' },
+    { id: 'm25',  family: 'milestone',   need: 25,    name: 'Twenty-five' },
+    { id: 'm50',  family: 'milestone',   need: 50,    name: 'Fifty sessions' },
+    { id: 'm100', family: 'milestone',   need: 100,   name: 'One hundred' },
+
+    { id: 's3',   family: 'streak',      need: 3,     name: '3-session run' },
+    { id: 's7',   family: 'streak',      need: 7,     name: '7-session run' },
+    { id: 's14',  family: 'streak',      need: 14,    name: '14-session run' },
+    { id: 's30',  family: 'streak',      need: 30,    name: '30-session run' },
+
+    { id: 'c3w',  family: 'consistency', need: 3,     name: 'Three in a week',   metric: 'week' },
+    { id: 'c5w',  family: 'consistency', need: 5,     name: 'Five in a week',    metric: 'week' },
+    { id: 'c4mo', family: 'consistency', need: 4,     name: 'A solid month',     metric: 'weekRun' },
+    { id: 'c12m', family: 'consistency', need: 12,    name: 'Twelve in a month', metric: 'month' },
+
+    { id: 't1',   family: 'time',        need: 3600,  name: 'An hour of movement' },
+    { id: 't5',   family: 'time',        need: 18000, name: 'Five hours' },
+    { id: 't10',  family: 'time',        need: 36000, name: 'Ten hours' },
+    { id: 't24',  family: 'time',        need: 86400, name: 'A full day' }
+  ];
+
+  /* ---- local calendar days ---------------------------------------------
+     endedAt is stored as ISO UTC. Bucketing by UTC date would put a 9pm
+     session on the following day in any timezone behind UTC, which either
+     breaks a run or falsely extends one. Everything below works from the
+     device's own calendar date instead. Day numbers go through Date.UTC on
+     those local components, so the arithmetic is immune to DST. */
+  function localDay(iso) {
+    var d = new Date(iso);
+    if (!iso || isNaN(d.getTime())) return null;
+    var m = d.getMonth() + 1, day = d.getDate();
+    return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+  }
+  function dayNumber(key) {
+    var p = key.split('-');
+    return Math.round(Date.UTC(+p[0], +p[1] - 1, +p[2]) / 86400000);
+  }
+  /* Monday-start week index. Epoch day 0 is a Thursday, so +3 shifts the
+     boundary back to the Monday. */
+  function weekIndex(key) { return Math.floor((dayNumber(key) + 3) / 7); }
+  function monthKey(key)  { return key.slice(0, 7); }
+
+  function defaultAwards() {
+    return { earned: {}, totals: { sessions: 0, seconds: 0 },
+             streak: { current: 0, best: 0, lastDay: null }, backfilled: false };
+  }
+  function loadAwards() {
+    var a = LS.get(K.awards, null);
+    if (!a || typeof a !== 'object') return defaultAwards();
+    var d = defaultAwards();
+    a.earned = a.earned || d.earned;
+    a.totals = a.totals || d.totals;
+    a.streak = a.streak || d.streak;
+    return a;
+  }
+  function saveAwards(a) { LS.set(K.awards, a); }
+
+  /* A run continues while consecutive sessions are no more than two days
+     apart, so a single rest day is forgiven and two days off starts it over.
+     Strict day-resets are where habit apps lose people, and a rest day is
+     the right call for her anyway. */
+  function extendRun(st, dayKey) {
+    if (!dayKey || st.streak.lastDay === dayKey) return;   // twice in one day counts once
+    var gap = st.streak.lastDay ? dayNumber(dayKey) - dayNumber(st.streak.lastDay) : null;
+    st.streak.current = (gap !== null && gap <= 2) ? st.streak.current + 1 : 1;
+    st.streak.lastDay = dayKey;
+    if (st.streak.current > st.streak.best) st.streak.best = st.streak.current;
+  }
+
+  function consistencyValue(metric, hist) {
+    var days = [];
+    hist.forEach(function (h) { var d = localDay(h.endedAt); if (d) days.push(d); });
+    if (!days.length) return 0;
+
+    if (metric === 'week' || metric === 'weekRun') {
+      var perWeek = {};
+      days.forEach(function (d) { var w = weekIndex(d); perWeek[w] = (perWeek[w] || 0) + 1; });
+      var weeks = Object.keys(perWeek).map(Number).sort(function (a, b) { return a - b; });
+      if (metric === 'week') {
+        return weeks.reduce(function (m, w) { return Math.max(m, perWeek[w]); }, 0);
+      }
+      // longest run of consecutive weeks holding three or more sessions
+      var best = 0, run = 0, prev = null;
+      weeks.forEach(function (w) {
+        if (perWeek[w] >= 3) { run = (prev !== null && w === prev + 1) ? run + 1 : 1; prev = w; }
+        else { run = 0; prev = w; }
+        if (run > best) best = run;
+      });
+      return best;
+    }
+    var perMonth = {};
+    days.forEach(function (d) { var m = monthKey(d); perMonth[m] = (perMonth[m] || 0) + 1; });
+    return Object.keys(perMonth).reduce(function (m, k) { return Math.max(m, perMonth[k]); }, 0);
+  }
+
+  function badgeValue(b, st, hist) {
+    if (b.family === 'milestone') return st.totals.sessions;
+    if (b.family === 'time')      return st.totals.seconds;
+    if (b.family === 'streak')    return Math.max(st.streak.current, st.streak.best);
+    return consistencyValue(b.metric, hist);
+  }
+
+  /* Returns the badges newly crossed by this call, so the finished screen can
+     celebrate exactly those. Already-earned ids are never re-awarded. */
+  function evaluateAwards(st, hist) {
+    var fresh = [];
+    BADGES.forEach(function (b) {
+      if (st.earned[b.id]) return;
+      if (badgeValue(b, st, hist) >= b.need) {
+        st.earned[b.id] = new Date().toISOString();
+        fresh.push(b);
+      }
+    });
+    return fresh;
+  }
+
+  /* One-time catch-up so an existing user does not restart from zero. Runs
+     from whatever history survives, then latches. Anything it awards is
+     deliberately not celebrated — she did not just earn it. */
+  function backfillAwards(st, hist) {
+    if (st.backfilled) return false;
+    st.totals.sessions = hist.length;
+    st.totals.seconds = hist.reduce(function (a, h) { return a + (h.durationSec || 0); }, 0);
+
+    var days = [];
+    hist.forEach(function (h) { var d = localDay(h.endedAt); if (d) days.push(d); });
+    days.sort();
+    st.streak = { current: 0, best: 0, lastDay: null };
+    days.forEach(function (d) { extendRun(st, d); });
+
+    evaluateAwards(st, hist);
+    st.backfilled = true;
+    return true;
+  }
+
+  /* ==========================================================
      8. DOM
      ========================================================== */
 
@@ -568,6 +729,11 @@
     rowVoice: $('row-voice'),
 
     histCount: $('hist-count'),
+    awards:     $('awards'),
+    awardsGrid: $('awards-grid'),
+    awardsNext: $('awards-next'),
+    awardsNote: $('awards-note'),
+    finAwards:  $('fin-awards'),
     histList:  $('hist-list'),
 
     syncSetup: $('sync-setup'),
@@ -887,6 +1053,15 @@
     if (hist.length > 200) hist = hist.slice(-200);
     LS.set(K.history, hist);
 
+    /* Counters move here and are never recomputed, so they outlive both the
+       200-entry cap above and a history clear. */
+    var awards = loadAwards();
+    awards.totals.sessions += 1;
+    awards.totals.seconds += durationSec;
+    extendRun(awards, localDay(entry.endedAt));
+    var freshAwards = evaluateAwards(awards, hist);
+    saveAwards(awards);
+
     Sync.queue('history', {
       started_at: entry.startedAt,
       ended_at: entry.endedAt,
@@ -897,9 +1072,12 @@
     });
 
     el.finTime.textContent = fmtClock(durationSec) + ' of movement';
-    el.finCount.textContent = hist.length === 1
-      ? 'Your first session. '
-      : 'Session number ' + hist.length + '.';
+    /* Counted from the awards total, not hist.length: history is capped at 200
+       entries, so this used to stick at "Session number 200" forever. */
+    el.finCount.textContent = awards.totals.sessions === 1
+      ? 'Your first session.'
+      : 'Session number ' + awards.totals.sessions + '.';
+    renderFinishedAwards(freshAwards);
 
     showScreen('finished');
     beepFinish();
@@ -1085,7 +1263,101 @@
      13. History panel
      ========================================================== */
 
+  function badgeNode(b, earned) {
+    var d = document.createElement('div');
+    d.className = 'aw aw-' + b.family + (earned ? '' : ' aw-locked');
+
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'aw-icon');
+    svg.setAttribute('aria-hidden', 'true');
+    var use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+    use.setAttribute('href', '#' + FAMILIES[b.family].icon);
+    svg.appendChild(use);
+
+    var nm = document.createElement('span');
+    nm.className = 'aw-name';
+    nm.textContent = b.name;
+
+    d.appendChild(svg);
+    d.appendChild(nm);
+    return d;
+  }
+
+  function fmtBadgeValue(b, v) {
+    return b.family === 'time' ? Math.floor(v / 3600) + 'h' : String(v);
+  }
+
+  /* Earned badges, then the next target in each family with a meter. Showing
+     only the next one per family is deliberate: eighteen greyed-out tiles read
+     as a list of failures, and progress toward the next is what actually moves
+     behaviour. */
+  function renderAwards() {
+    if (!el.awards) return;
+    var st = loadAwards();
+    var hist = LS.get(K.history, []) || [];
+
+    var earned = BADGES.filter(function (b) { return !!st.earned[b.id]; });
+    el.awardsGrid.innerHTML = '';
+    earned.forEach(function (b) { el.awardsGrid.appendChild(badgeNode(b, true)); });
+
+    el.awardsNext.innerHTML = '';
+    Object.keys(FAMILIES).forEach(function (fam) {
+      var next = null;
+      BADGES.forEach(function (b) {
+        if (b.family !== fam || st.earned[b.id]) return;
+        if (!next || b.need < next.need) next = b;
+      });
+      if (!next) return;
+
+      var have = Math.min(badgeValue(next, st, hist), next.need);
+      var row = document.createElement('div');
+      row.className = 'aw-next aw-' + fam;
+
+      var top = document.createElement('div');
+      top.className = 'aw-next-top';
+      var nm = document.createElement('span');
+      nm.textContent = next.name;
+      var ct = document.createElement('span');
+      ct.className = 'aw-next-count';
+      ct.textContent = fmtBadgeValue(next, have) + ' / ' + fmtBadgeValue(next, next.need);
+      top.appendChild(nm);
+      top.appendChild(ct);
+
+      var track = document.createElement('div');
+      track.className = 'aw-track';
+      var fill = document.createElement('span');
+      fill.className = 'aw-fill';
+      fill.style.transform = 'scaleX(' + (next.need ? (have / next.need).toFixed(4) : 0) + ')';
+      track.appendChild(fill);
+
+      row.appendChild(top);
+      row.appendChild(track);
+      el.awardsNext.appendChild(row);
+    });
+
+    // Nothing earned and nothing done yet: keep the panel quiet.
+    var show = earned.length > 0 || st.totals.sessions > 0;
+    el.awards.hidden = !show;
+    el.awardsNote.hidden = !earned.some(function (b) { return b.family === 'streak'; }) &&
+                           st.streak.current < 2;
+  }
+
+  /* Only what this session crossed. Backfilled badges never reach here. */
+  function renderFinishedAwards(fresh) {
+    if (!el.finAwards) return;
+    el.finAwards.innerHTML = '';
+    if (!fresh || !fresh.length) { el.finAwards.hidden = true; return; }
+    el.finAwards.hidden = false;
+    fresh.forEach(function (b, i) {
+      var n = badgeNode(b, true);
+      n.classList.add('aw-new');
+      n.style.animationDelay = (i * 140) + 'ms';
+      el.finAwards.appendChild(n);
+    });
+  }
+
   function renderHistory() {
+    renderAwards();
     var hist = (LS.get(K.history, []) || []).slice().reverse();
     el.histList.innerHTML = '';
 
@@ -1296,6 +1568,12 @@
   window.addEventListener('hashchange', function () {
     if (bootstrapFromHash()) showBootstrapped();
   });
+
+  /* Existing users have history but no awards yet; credit it once. */
+  (function () {
+    var a = loadAwards();
+    if (backfillAwards(a, LS.get(K.history, []) || [])) saveAwards(a);
+  }());
 
   renderStartSummary();
   renderSyncStatus();

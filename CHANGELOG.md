@@ -7,6 +7,62 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.2.0] — 2026-09-11
+
+### Added
+
+- **Badges.** Eighteen across four families, each with its own accent, shown at the top of the
+  History panel and revealed on the finished screen when newly earned.
+  - **Milestones** (1, 5, 10, 25, 50, 100 sessions), **runs** (3, 7, 14, 30), **consistency**
+    (three in a week, five in a week, four straight weeks of three-plus, twelve in a month) and
+    **time moved** (1, 5, 10, 24 hours).
+  - The History panel shows what she has earned, then the next target in each family with a
+    progress meter. Only the next one per family is shown rather than all eighteen: a wall of
+    greyed-out tiles reads as a list of failures, and progress toward the next is what actually
+    moves behaviour.
+  - Newly earned badges scale in on the "Well done" screen, staggered if more than one lands at
+    once. Honours `prefers-reduced-motion`.
+  - Icons are four stroked line-art `<symbol>`s in an inline sprite, drawn in `currentColor` so the
+    family accent comes from CSS. No new files.
+- **A rest day does not break a run.** A run continues while consecutive sessions are no more than
+  two days apart; two days off starts it over, and the panel says so plainly. Strict day-resets are
+  where habit apps lose people — the loss of a long streak is felt far more sharply than the gain
+  ever was, and one miss tends to become "might as well stop". A rest day is also simply the right
+  call for a 65-year-old doing daily cardio.
+
+### Changed
+
+- **Badge state lives in its own key, `cardio.awards.v1`**, not derived from history. Totals and
+  the run counter are incremented once per finished session and never recomputed, and `earned` is
+  append-only. This is deliberate: history is capped at 200 entries and "Clear history" empties it,
+  so anything derived from it would silently erase what she had earned. Verified that clearing
+  history leaves all badges and the session total intact, across a reload.
+  - The consistency family is the exception — it is about how sessions spread across weeks and
+    months, so it must read the history. It degrades honestly: badges already earned stay earned,
+    only future evaluation restarts from the emptied array.
+  - On first run it backfills from whatever history exists, so an existing user does not restart at
+    zero, then latches. Backfilled badges deliberately do not animate — she did not just earn them.
+
+### Fixed
+
+- **"Session number N" on the finished screen capped at 200.** It counted `hist.length`, and
+  `finish()` trims that array to the last 200 entries, so it would have read "Session number 200"
+  forever. It now counts the awards total, which is never trimmed.
+
+### Notes
+
+- All date maths runs on the device's local calendar date, not the stored UTC timestamp. Bucketing
+  by UTC would push a 9pm session onto the following day in any timezone behind UTC, which either
+  breaks a run or falsely extends one. Day numbers go through `Date.UTC()` on those local
+  components, which also makes DST a non-issue.
+- Run rule verified against consecutive days, one rest day, two days off, twice in one day, and
+  month, year and DST boundaries. Backfill verified against a seeded 14-session history: 14
+  sessions, best run of 5, and exactly the eight badges that history earns.
+- Badges are not synced to the Sheet. The Apps Script that receives those rows lives outside this
+  repo, so sending a new row type would need a matching change there first.
+
+---
+
 ## [2.1.0] — 2026-09-11
 
 ### Added
