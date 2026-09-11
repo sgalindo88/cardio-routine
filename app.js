@@ -553,7 +553,8 @@
     media:   $('wo-media'),
     mediaBox: document.querySelector('.media-box'),
     video:   $('ex-video'),
-    ringFill: $('ring-fill'),
+    progFill: $('progress-fill'),
+    progIcon: $('progress-icon'),
     toggle:  $('btn-toggle'),
 
     finTime:  $('fin-time'),
@@ -573,8 +574,6 @@
     inToken:   $('in-sync-token'),
     syncMsg:   $('sync-msg')
   };
-
-  var RING_C = 2 * Math.PI * 88;   // matches r="88" in index.html
 
   /* ==========================================================
      9. State + timer
@@ -670,6 +669,14 @@
     else node.removeAttribute('hidden');
   }
 
+  /* The pause control is the progress bar itself, so it carries an icon
+     rather than a word. Writing textContent here would wipe the fill span
+     out of the button, so set the glyph and the accessible name instead. */
+  function setToggle(paused) {
+    if (el.progIcon) el.progIcon.textContent = paused ? '\u25B6' : '\u2759\u2759';
+    el.toggle.setAttribute('aria-label', paused ? 'Resume' : 'Pause');
+  }
+
   function paintSegment(s) {
     if (painted.idx === state.idx) return;
     painted.idx = state.idx;
@@ -700,6 +707,10 @@
       if (show) el.mediaBox.classList.remove('is-empty');
       else el.mediaBox.classList.add('is-empty');
     }
+    /* With no clip there is nothing for the stage to hold, so it collapses and
+       the text centres itself — which is how the reference app lays out its
+       rest screens. The class is what CSS keys both behaviours off. */
+    el.scWorkout.classList.toggle('no-clip', !show);
 
     if (!show) { pauseClip(); return; }
 
@@ -726,8 +737,11 @@
         el.total.textContent = fmtClock(totalLeft) + ' left';
       }
     }
+    /* The bar fills as the interval is spent, so it reads left-to-right the
+       way a progress bar is expected to. scaleX rather than width keeps this
+       off the layout path — it runs every animation frame. */
     var frac = state.segTotalMs > 0 ? Math.max(0, remainMs) / state.segTotalMs : 0;
-    el.ringFill.style.strokeDashoffset = (RING_C * (1 - frac)).toFixed(1);
+    el.progFill.style.transform = 'scaleX(' + (1 - frac).toFixed(4) + ')';
   }
 
   function repaintAll() {
@@ -764,7 +778,7 @@
 
     showScreen('workout');
     el.body.removeAttribute('data-paused');
-    el.toggle.textContent = 'Pause';
+    setToggle(false);
     painted.idx = -1;
     paintSegment(seg());
     say('Warm up. ' + seg().name + '.');
@@ -782,7 +796,7 @@
     pauseClip();
     releaseWakeLock();
     el.body.setAttribute('data-paused', 'true');
-    el.toggle.textContent = 'Resume';
+    setToggle(true);
     refreshVisual();
   }
 
@@ -792,7 +806,7 @@
     state.running = true;
     state.endsAt = performance.now() + state.remainingMs;
     el.body.removeAttribute('data-paused');
-    el.toggle.textContent = 'Pause';
+    setToggle(false);
     resumeClip();
     refreshVisual();
     acquireWakeLock();
@@ -1166,7 +1180,6 @@
      ========================================================== */
 
   if (!speechOK) el.rowVoice.hidden = true;
-  el.ringFill.style.strokeDasharray = RING_C.toFixed(1);
 
   /* A missing or unplayable clip collapses the panel for that segment
      instead of showing a broken element.

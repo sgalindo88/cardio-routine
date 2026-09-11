@@ -1,33 +1,42 @@
 /* ============================================================
-   Cardio Routine — warm paper palette
+   Cardio Routine — near-white, one coral accent
+   ------------------------------------------------------------
+   Styled after a commercial fitness app: a near-white ground,
+   heavy black type, the clip as the hero, and progress shown as
+   a horizontal bar that is also the pause button. Two accents
+   rather than that app's one — coral while she is working, a
+   calm teal while she is not — because losing the work/rest
+   distinction at a glance is not worth the fidelity.
    ============================================================ */
 
 :root{
-  --ground:#F7F4EF;
-  --surface:#FFFDF9;
-  --text:#2A2724;
-  --muted:#6B655D;
-  --line:#E3DDD2;
+  --ground:#F6F4F3;
+  --surface:#FFFFFF;
+  --text:#17140F;
+  --muted:#6E6762;
+  --line:#E4DFDB;
 
-  --sage:#4F7043;      /* work            */
-  --ochre:#9A6B12;     /* march / recover */
-  --break:#7A4A22;     /* water break     */
-  --teal:#3F6F6B;      /* warm-up/cool-down */
-  --slate:#3F6083;     /* finished        */
+  --coral:#E0564C;     /* work, and the primary action on every screen */
+  --calm:#3F6F6B;      /* warm-up, recover, water break, cool-down     */
 
-  --state:var(--teal);
+  --state:var(--calm);
   --state-wash:rgba(63,111,107,.08);
 
   --r:16px;
   --tap:56px;
 }
 
-body[data-kind="work"]    { --state:var(--sage);  --state-wash:rgba(79,112,67,.10); }
-body[data-kind="recover"] { --state:var(--ochre); --state-wash:rgba(154,107,18,.10); }
-body[data-kind="break"]   { --state:var(--break); --state-wash:rgba(122,74,34,.10); }
+/* Work is the only coral state. Everything else is the calm colour, so the
+   two read as "go" and "ease off" without needing to be read. */
+body[data-kind="work"]    { --state:var(--coral); --state-wash:rgba(224,86,76,.10); }
+body[data-kind="recover"],
+body[data-kind="break"],
 body[data-kind="warmup"],
-body[data-kind="cooldown"]{ --state:var(--teal);  --state-wash:rgba(63,111,107,.09); }
-body[data-kind="finished"]{ --state:var(--slate); --state-wash:rgba(63,96,131,.10); }
+body[data-kind="cooldown"]{ --state:var(--calm);  --state-wash:rgba(63,111,107,.09); }
+/* Idle and finished carry the primary action — Start and Again — so they take
+   the coral too. Two colours in the whole app, no third. */
+body[data-kind="finished"],
+body[data-kind="idle"]    { --state:var(--coral); --state-wash:rgba(224,86,76,.10); }
 
 *{ box-sizing:border-box; }
 [hidden]{ display:none !important; }
@@ -45,8 +54,10 @@ body{
 .screen{
   position:fixed; inset:0;
   display:flex; flex-direction:column;
-  padding:max(12px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right))
-          max(12px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  /* The progress bar is the last thing on the workout screen and sits right on
+     this edge, so give it more than the old 12px to breathe against. */
+  padding:max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+          max(18px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
 }
 .screen-pad{ align-items:center; justify-content:center; }
 
@@ -69,110 +80,106 @@ body{
 /* ---------- buttons ---------- */
 .btn{
   font:inherit; font-weight:700;
-  border:2px solid transparent; border-radius:var(--r);
-  background:var(--surface); color:var(--text);
+  border:none; border-radius:999px;
+  background:rgba(23,20,15,.055); color:var(--text);
   cursor:pointer; -webkit-tap-highlight-color:transparent;
-  min-height:var(--tap); padding:0 22px;
-  transition:transform .08s ease, background-color .15s ease, border-color .15s ease;
+  min-height:var(--tap); padding:0 26px;
+  transition:transform .08s ease, background-color .15s ease;
 }
 .btn:active{ transform:scale(.97); }
 .btn:focus-visible{ outline:3px solid var(--state); outline-offset:3px; }
 
 .btn-primary{
-  background:var(--state); color:#fff; border-color:var(--state);
-  box-shadow:0 3px 0 rgba(0,0,0,.10);
+  background:var(--state); color:#fff;
 }
 .btn-huge{
   min-height:76px; width:100%; max-width:340px;
-  font-size:clamp(1.3rem,4vmin,1.8rem); border-radius:22px;
+  font-size:clamp(1.3rem,4vmin,1.8rem); border-radius:999px;
 }
-.btn-wide{ min-width:150px; font-size:clamp(1.05rem,3vmin,1.35rem); min-height:64px; }
 .btn-round{
   min-width:var(--tap); width:var(--tap); height:var(--tap);
   padding:0; border-radius:50%;
-  border-color:var(--line); font-size:1.25rem; line-height:1;
+  font-size:1.25rem; line-height:1;
   display:inline-flex; align-items:center; justify-content:center;
 }
 .btn-plus{ font-size:.95rem; font-weight:800; }
 .btn-quiet{
   background:transparent; color:var(--muted);
-  border-color:transparent; text-decoration:underline;
-  text-underline-offset:4px; font-weight:600; min-height:48px;
+  text-decoration:none; font-weight:700; min-height:48px;
 }
-.btn-danger{ color:#9A3B25; }
+.btn-danger{ color:var(--coral); }
 .row-secondary{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
 
-/* ---------- workout: head ---------- */
+/* ---------- workout: head ----------
+   Close button, where she is in the routine, and the clock. The reference app
+   puts its exit in this corner, so Reset lives here now rather than as a link
+   under the controls. */
 .wo-head{
-  display:flex; align-items:baseline; justify-content:space-between;
-  gap:12px; flex:0 0 auto; padding:2px 4px 10px;
-  /* Both lines are readable-sized now, so on a narrow phone they may not fit
-     side by side. Let the clock drop to its own line rather than squeeze. */
-  flex-wrap:wrap;
+  display:flex; align-items:center; gap:10px;
+  flex:0 0 auto; padding:2px 0 8px;
 }
 .wo-label{
-  margin:0; font-weight:800; color:var(--state);
-  /* Tighter tracking than the usual uppercase label: at this size the extra
-     letter-spacing is what pushes "Cool-down · 6 of 6" past a narrow screen. */
-  letter-spacing:.05em; text-transform:uppercase;
-  font-size:clamp(1.05rem,4.2vmin,1.3rem);
+  margin:0; flex:1 1 auto; min-width:0;
+  font-weight:800; color:var(--state);
+  letter-spacing:.04em; text-transform:uppercase;
+  font-size:clamp(1rem,4vmin,1.2rem);
 }
-.wo-total{ margin:0; color:var(--muted); font-size:clamp(.95rem,3.8vmin,1.15rem); font-variant-numeric:tabular-nums; }
+.wo-total{
+  margin:0; flex:0 0 auto; color:var(--muted);
+  font-size:clamp(.95rem,3.8vmin,1.1rem); font-variant-numeric:tabular-nums;
+}
 
-/* ---------- workout: body ---------- */
-.wo-body{
+/* ---------- workout: stage ----------
+   The clip is the hero. It takes every pixel the text block below does not
+   need, which is the single biggest difference from the old ring layout. */
+.wo-stage{
   flex:1 1 auto; min-height:0;
-  display:grid; grid-template-rows:auto minmax(0,1fr);
-  gap:20px; align-content:center; justify-items:center;
+  display:grid; place-items:center; width:100%;
+}
+.media-box{
+  position:relative; width:100%; height:100%; min-height:0;
+  display:grid; place-items:center;
 }
 
-.ring-area{ display:grid; place-items:center; min-height:0; }
-.ring-wrap{
-  position:relative;
-  /* Deliberately smaller than the room available: the space this gives up is
-     what pays for the larger exercise name and cue underneath, and for the
-     breathing room between them. Shrink `.seconds` by the same factor if you
-     change this, or the number stops fitting inside the ring. */
-  width:min(27vh,46vw,200px); aspect-ratio:1;
+/* A segment with no clip — the recovery marches and the water break — collapses
+   the stage and centres the text instead, the way the reference app lays out
+   its "get ready" screens. */
+.no-clip .wo-stage{ flex:0 0 auto; }
+.no-clip .wo-info{
+  /* The text block takes over the stage's growth, so it centres in the space
+     the clip would have filled instead of stacking at the top of it. */
+  flex:1 1 auto; justify-content:center;
+  text-align:center; align-items:center;
 }
-.ring{ width:100%; height:100%; transform:rotate(-90deg); }
-.ring-track{ fill:var(--state-wash); stroke:var(--line); stroke-width:12; }
-.ring-fill{
-  fill:none; stroke:var(--state); stroke-width:12; stroke-linecap:round;
-  stroke-dasharray:552.92; stroke-dashoffset:0;
+
+/* ---------- workout: text block ----------
+   Left-aligned under the clip: timer, then name, then cue. */
+.wo-info{
+  flex:0 0 auto;
+  display:flex; flex-direction:column; align-items:flex-start;
+  gap:6px; width:100%; padding:14px 0 4px;
 }
-.ring-center{
-  position:absolute; inset:0;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+.timer-line{
+  margin:0; display:flex; align-items:baseline; gap:10px;
 }
 .seconds{
-  /* Each term is 75% of the ring's, so the number keeps its proportion inside
-     the ring rather than growing to fill it. */
-  font-size:min(16vh,24vw,5.25rem); font-weight:800; line-height:.95;
-  font-variant-numeric:tabular-nums; letter-spacing:-.03em;
+  font-size:clamp(3.2rem,13vmin,4.6rem); font-weight:800; line-height:1;
+  font-variant-numeric:tabular-nums; letter-spacing:-.035em;
 }
 .kind-tag{
-  font-size:clamp(.7rem,1.9vmin,.95rem); font-weight:800;
-  letter-spacing:.14em; text-transform:uppercase; color:var(--state);
-}
-
-.info-area{
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  /* Name, cue, clip and "Next up" are four separate things stacked in one
-     column; at these type sizes 6px read as one crowded block. */
-  gap:14px; text-align:center; width:100%; min-height:0; max-width:640px;
+  font-size:clamp(.8rem,3vmin,1rem); font-weight:800;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--state);
 }
 .ex-name{
-  margin:0; font-weight:800; letter-spacing:-.015em; line-height:1.1;
-  font-size:clamp(1.85rem,7.4vmin,2.8rem);
+  margin:0; font-weight:800; letter-spacing:-.02em; line-height:1.12;
+  font-size:clamp(1.6rem,6.4vmin,2.2rem);
 }
 .ex-cue{
-  margin:0; color:var(--muted); line-height:1.35;
+  margin:0; color:var(--muted); line-height:1.3;
   /* Read at arm's length from a propped-up phone mid-exercise: 25px on a
      typical handset, past iOS "Large Text". The floor, not the vmin term, is
      what usually applies on a phone — that is intentional. */
   font-size:clamp(1.5625rem,6.4vmin,1.95rem);
-  /* 34ch of text at this size overflows a narrow phone; cap at the column. */
   max-width:min(34ch,100%);
 }
 .next-up{
@@ -180,72 +187,116 @@ body{
   font-size:clamp(1.15rem,4.6vmin,1.45rem);
 }
 
-.media-box{
-  position:relative; flex:1 1 auto; min-height:0;
-  display:grid; place-items:center; width:100%;
-}
-
-
 /* ---------- controls ---------- */
 .controls{
   flex:0 0 auto;
   display:flex; align-items:center; justify-content:center;
-  gap:10px; padding-top:14px; flex-wrap:wrap;
+  gap:14px; padding:10px 0;
 }
-.controls-sub{ flex:0 0 auto; display:flex; justify-content:center; }
 
-/* ---------- landscape ---------- */
+/* Circular, quiet, on a tinted disc — the reference's control language. Sized
+   well above its buttons though: these get pressed mid-exercise. */
+.btn-icon{
+  font:inherit; font-weight:800;
+  width:var(--tap); height:var(--tap); min-width:var(--tap);
+  padding:0; border:none; border-radius:50%;
+  background:rgba(23,20,15,.055); color:var(--text);
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:1.3rem; line-height:1;
+  transition:transform .08s ease, background-color .15s ease;
+}
+.btn-icon:active{ transform:scale(.94); }
+.btn-icon:focus-visible{ outline:3px solid var(--state); outline-offset:3px; }
+.btn-plus{ font-size:1rem; }
+
+.btn-close{
+  width:44px; height:44px; min-width:44px;
+  font-size:1.5rem; font-weight:400;
+  color:var(--muted); background:rgba(23,20,15,.05);
+}
+
+/* ---------- progress + pause ----------
+   One control: the coral fill is how far through the interval she is, and the
+   whole bar pauses. Tall enough to be an easy target without aiming. */
+.progress-btn{
+  position:relative; flex:0 0 auto;
+  display:block; width:100%; height:62px;
+  padding:0; border:none; border-radius:31px;
+  background:rgba(23,20,15,.07);
+  overflow:hidden; cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.progress-btn:focus-visible{ outline:3px solid var(--state); outline-offset:3px; }
+.progress-fill{
+  position:absolute; inset:0;
+  background:var(--state);
+  transform:scaleX(0); transform-origin:left center;
+  /* No transition: this is written every animation frame, and easing it would
+     make the bar lag the number beside it. */
+}
+.progress-icon{
+  position:relative;
+  display:flex; align-items:center; justify-content:center;
+  width:100%; height:100%;
+  font-size:1.25rem; letter-spacing:.12em;
+  /* Dark in both halves of the sweep. The icon sits mid-bar, so it spends the
+     first half of an interval on the pale track and the second half on the
+     fill: white would be 1.26:1 against the track, invisible. Dark measures
+     14.5:1 on the track, 4.9:1 on coral and 3.2:1 on the calm fill — all clear
+     of the 3:1 a glyph this size needs. */
+  color:var(--text); opacity:.8;
+}
+
+/* ---------- landscape ----------
+   Clip beside the text rather than above it, so a sideways phone does not
+   squeeze the stage to a thumbnail. */
 @media (orientation:landscape) and (min-width:640px){
-  .wo-body{
-    grid-template-rows:none;
-    grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);
-    gap:20px; align-items:center;
+  .wo-stage{
+    grid-column:1; grid-row:1 / span 2;
   }
-  .ring-wrap{ width:min(39vh,27vw,240px); }
-  .seconds{ font-size:min(19.5vh,12.75vw,5.6rem); }
-  .info-area{ justify-content:center; height:100%; }
-  .ex-cue{ max-width:min(30ch,100%); }
+  .screen#screen-workout{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+    grid-template-rows:auto minmax(0,1fr) auto auto;
+    column-gap:22px;
+  }
+  .wo-head{ grid-column:1 / -1; }
+  .wo-stage{ grid-column:1; grid-row:2 / span 3; }
+  .wo-info{ grid-column:2; grid-row:2; justify-content:center; padding-top:0; }
+  .controls{ grid-column:2; grid-row:3; justify-content:flex-start; }
+  .progress-btn{ grid-column:2; grid-row:4; }
 }
 
-/* ---------- short / narrow portrait ----------
-   A 4"-class phone (320x568) cannot hold the full type scale, the clip and a
-   control bar that has wrapped onto two rows. `.info-area` has `min-height:0`,
-   so whatever does not fit is clipped outright rather than scrolled — the cue
-   loses its last line with nothing on screen to say so. Step the workout
-   screen down a tier there instead. Scoped to portrait: the landscape block
-   above sets its own ring size and would otherwise be overridden by this. */
+/* ---------- short portrait ----------
+   A 4"-class phone cannot hold the full type scale and a usable clip. The text
+   block is fixed-height here, so what gives is the stage — step the type down
+   so the clip keeps a workable size. */
 @media (orientation:portrait) and (max-height:700px){
-  .wo-body{ gap:12px; }
-  .info-area{ gap:8px; }
-  .ring-wrap{ width:min(23vh,40vw,170px); }
-  .seconds{ font-size:min(13.5vh,21vw,4.5rem); }
-  .ex-name{ font-size:clamp(1.5rem,6vmin,2rem); }
+  .wo-info{ gap:4px; padding:10px 0 2px; }
+  .seconds{ font-size:clamp(2.6rem,11vmin,3.4rem); }
+  .ex-name{ font-size:clamp(1.35rem,5.6vmin,1.7rem); }
   .ex-cue{ font-size:clamp(1.25rem,5vmin,1.5rem); }
   .next-up{ font-size:clamp(1rem,4vmin,1.2rem); }
-  .controls{ padding-top:8px; }
+  .controls{ padding:6px 0; gap:10px; }
+  .progress-btn{ height:54px; border-radius:27px; }
 }
 
-/* The four controls need 348px and a 375px phone offers 347, so they wrap to a
-   second row and cost 72px of the height the cue needs. Trim the round buttons
-   below 380px — 48px still clears the 44px touch minimum — so the bar stays on
-   one row. The vertical space is worth more here than 8px of button diameter:
-   it is what keeps the clip full-size under the larger text. */
-@media (orientation:portrait) and (max-width:380px){
-  .controls{ gap:8px; flex-wrap:nowrap; }
-  .controls .btn-round{ min-width:48px; width:48px; height:48px; }
-  .btn-wide{ min-width:110px; }
+/* Three icon buttons and their gaps fit a narrow phone easily, but the tap
+   size can come down a little to buy the stage more height. */
+@media (orientation:portrait) and (max-width:360px){
+  .btn-icon{ width:50px; height:50px; min-width:50px; }
 }
 
-/* A phone held sideways has the same problem as a short one held upright —
-   about 390px of height for everything — except the clip absorbs the squeeze
-   instead of the cue, shrinking to a thumbnail. Step the same tier down here.
-   Keyed on height, so a tablet in landscape keeps the full scale. */
+/* A phone held sideways has about 390px of height for everything. */
 @media (orientation:landscape) and (max-height:500px){
-  .info-area{ gap:8px; }
-  .ex-name{ font-size:clamp(1.5rem,6vmin,2rem); }
+  .wo-info{ gap:4px; padding:0; }
+  .seconds{ font-size:clamp(2.4rem,10vmin,3.2rem); }
+  .ex-name{ font-size:clamp(1.3rem,5vmin,1.6rem); }
   .ex-cue{ font-size:clamp(1.25rem,5vmin,1.5rem); max-width:none; }
   .next-up{ font-size:clamp(1rem,4vmin,1.2rem); }
-  .controls{ padding-top:8px; }
+  .controls{ padding:6px 0; }
+  .progress-btn{ height:50px; border-radius:25px; }
 }
 
 /* ---------- panels ---------- */
@@ -290,7 +341,7 @@ body{
   position:relative; cursor:pointer; padding:0;
   transition:background-color .18s ease, border-color .18s ease;
 }
-.toggle[aria-checked="true"]{ background:var(--sage); border-color:var(--sage); }
+.toggle[aria-checked="true"]{ background:var(--calm); border-color:var(--calm); }
 .toggle .knob{
   position:absolute; top:3px; left:3px; width:28px; height:28px;
   border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25);
@@ -337,7 +388,7 @@ body{
   /* Must stay at or above 16px: iOS zooms the whole page in when a smaller
      field takes focus, and the user then has to pinch back out. */
   font:inherit; font-size:1.05rem;
-  padding:11px 12px; border:1px solid var(--line); border-radius:12px;
+  padding:13px 14px; border:1px solid var(--line); border-radius:14px;
   background:var(--surface); color:var(--text); width:100%;
 }
 .fld input:focus-visible{ outline:3px solid var(--state); outline-offset:2px; border-color:var(--state); }
@@ -345,7 +396,6 @@ body{
 .sync-actions{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
 .btn-small{
   min-height:44px; padding:0 16px; font-size:1rem;
-  border-color:var(--line);
 }
 .sync-msg{
   margin:2px 0 0; font-size:1rem; font-weight:600;

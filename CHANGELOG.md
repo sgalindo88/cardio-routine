@@ -7,6 +7,60 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.0.0] — 2026-09-11
+
+Restyled after a commercial fitness app, from a reference video. The countdown ring is gone, the
+clip is now the hero, and progress is a horizontal bar that doubles as the pause button.
+
+### Changed
+
+- **The clip is the hero.** It takes every pixel the text block does not need, instead of sitting
+  below the text in whatever was left. On a 390×844 phone the smallest clip in the routine went
+  from 265px to 358px, and at 320×568 from 174px to 174px — every size gained, none lost.
+- **The countdown ring is gone**, replaced by a full-width bar that fills left to right as the
+  interval is spent. The bar is also the pause button, as in the reference. `RING_C`, the SVG and
+  all the ring CSS went with it.
+- **The text block is left-aligned under the clip**: a large timer with the segment tag beside it,
+  then the exercise name, then the cue. The reference has no cue line at all; keeping one is the
+  deliberate departure, since reading the instruction from across the room is the whole point of
+  this app.
+- **Two colours, not five.** Coral `#E0564C` while she is working, a calm teal `#3F6F6B` for
+  warm-up, recovery, the water break and cool-down. The old sage/ochre/terracotta/slate set is
+  gone. Coral also carries the primary action on the start and finished screens.
+- **Near-white ground** `#F6F4F3` in place of the warm paper `#F7F4EF`, with heavier, tighter black
+  type. Buttons lost their outlines and drop shadow for flat tinted discs and full-round pills.
+- **Reset moved into the header as an X**, where the reference puts its exit, freeing the bottom of
+  the screen for the progress bar.
+- Segments with no clip — the recovery marches and the water break — collapse the stage and centre
+  their text, which is how the reference lays out its "get ready" screens.
+
+### Fixed
+
+- The pause glyph would have been white on the pale track for the first half of every interval —
+  1.26:1, effectively invisible — because the icon sits mid-bar and the fill only reaches it at the
+  halfway point. It is dark in both halves now: 14.5:1 on the track, 4.9:1 on coral, 3.2:1 on the
+  calm fill, all clear of the 3:1 a glyph this size needs.
+- `--sage` was still referenced by the settings toggles after the palette was replaced, which would
+  have left them with no "on" colour at all. Every `var()` in the stylesheet now resolves.
+
+### Notes
+
+- `btn-toggle` is no longer a text button; it wraps the fill and an icon span, so `setToggle()`
+  swaps the glyph and the `aria-label` rather than writing `textContent`, which would delete the
+  fill out of the button.
+- The progress fill is driven by `transform: scaleX()`, not `width` — it is written every animation
+  frame, and it carries no transition, which would make it lag the number beside it.
+- Verified across 390×844, 375×812, 320×568, 430×932, 360×780, 390×701 and 844×390: all 26
+  clip-bearing segments render, no cue clipped, no overflow on either axis at any size. Pause and
+  resume, the space bar, and the header X all checked by hand.
+- Kept from the reference but sized up: its controls are small and low-contrast. Ours stay at 56px
+  with a 62px bar, because they are pressed mid-exercise.
+- Kept deliberately against the reference: bare seconds rather than `MM:SS` (fewer characters means
+  much larger digits at the same width), and the clip keeps its rounded card and shadow, since our
+  footage has a busy background where the reference's model is shot on white.
+
+---
+
 ## [1.4.0] — 2026-09-11
 
 The workout screen retuned for readability. It is used on a phone by someone in their sixties,

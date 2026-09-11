@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F7F4EF">
+<meta name="theme-color" content="#F6F4F3">
 <title>Cardio Routine</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="styles.css">
@@ -27,50 +27,45 @@
 <section id="screen-workout" class="screen" hidden>
 
   <header class="wo-head">
+    <button id="btn-reset" class="btn-icon btn-close" aria-label="End workout">&times;</button>
     <p id="wo-label" class="wo-label">Warm-up</p>
     <p id="wo-total" class="wo-total">22:00 left</p>
   </header>
 
-  <div class="wo-body">
-
-    <div class="ring-area">
-      <div class="ring-wrap">
-        <svg class="ring" viewBox="0 0 200 200" aria-hidden="true">
-          <circle class="ring-track" cx="100" cy="100" r="88"></circle>
-          <circle id="ring-fill" class="ring-fill" cx="100" cy="100" r="88"></circle>
-        </svg>
-        <div class="ring-center">
-          <span id="wo-seconds" class="seconds" role="timer" aria-live="off">45</span>
-          <span id="wo-kind" class="kind-tag">Work</span>
-        </div>
-      </div>
+  <!-- The clip is the hero, as in the reference app. It takes whatever height
+       the text block below does not need. -->
+  <div class="wo-stage">
+    <div class="media-box">
+      <video id="ex-video" class="ex-video"
+             muted loop playsinline preload="auto"
+             disablepictureinpicture disableremoteplayback
+             hidden aria-hidden="true"></video>
     </div>
-
-    <div class="info-area">
-      <h2 id="wo-name" class="ex-name" aria-live="polite">Get ready</h2>
-      <p id="wo-cue" class="ex-cue"></p>
-
-      <div class="media-box">
-        <video id="ex-video" class="ex-video"
-               muted loop playsinline preload="auto"
-               disablepictureinpicture disableremoteplayback
-               hidden aria-hidden="true"></video>
-      </div>
-
-      <p id="wo-next" class="next-up" hidden></p>
-    </div>
-
   </div>
 
-  <nav class="controls">
-    <button id="btn-prev"   class="btn btn-round" aria-label="Previous exercise">&#9198;</button>
-    <button id="btn-toggle" class="btn btn-primary btn-wide">Pause</button>
-    <button id="btn-next"   class="btn btn-round" aria-label="Next exercise">&#9197;</button>
-    <button id="btn-plus"   class="btn btn-round btn-plus" aria-label="Add fifteen seconds">+15</button>
+  <div class="wo-info">
+    <p class="timer-line">
+      <span id="wo-seconds" class="seconds" role="timer" aria-live="off">45</span>
+      <span id="wo-kind" class="kind-tag">Work</span>
+    </p>
+    <h2 id="wo-name" class="ex-name" aria-live="polite">Get ready</h2>
+    <p id="wo-cue" class="ex-cue"></p>
+    <p id="wo-next" class="next-up" hidden></p>
+  </div>
+
+  <nav class="controls" aria-label="Workout controls">
+    <button id="btn-prev" class="btn-icon" aria-label="Previous exercise">&#9198;</button>
+    <button id="btn-next" class="btn-icon" aria-label="Next exercise">&#9197;</button>
+    <button id="btn-plus" class="btn-icon btn-plus" aria-label="Add fifteen seconds">+15</button>
   </nav>
-  <div class="controls-sub">
-    <button id="btn-reset" class="btn btn-quiet">Reset</button>
-  </div>
+
+  <!-- Progress bar and pause button are one control, as in the reference: the
+       coral fill is how far through the interval she is, and the whole bar is
+       the tap target. -->
+  <button id="btn-toggle" class="progress-btn" aria-label="Pause">
+    <span id="progress-fill" class="progress-fill" aria-hidden="true"></span>
+    <span id="progress-icon" class="progress-icon" aria-hidden="true">&#10073;&#10073;</span>
+  </button>
 </section>
 
 <!-- ══════════════ FINISHED ══════════════ -->

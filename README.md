@@ -3,6 +3,10 @@
 A guided workout timer built for a 65-year-old: large type, high contrast, spoken cues, looping
 video demonstrations, and big buttons that work at arm's length in a living room.
 
+Styled after a commercial fitness app — near-white ground, heavy black type, the clip as the hero,
+and progress shown as a horizontal bar that is also the pause button — but with the type and touch
+targets sized up, and an exercise description the reference does not have.
+
 **22 minutes** — 2 min warm-up · 2 rounds of 8 exercises (45s work / 15s march) · 1 min water
 break · 3 min cool-down.
 
@@ -37,10 +41,10 @@ address bar eating vertical space.
 | Control | What it does |
 |---|---|
 | **Start** | Begins the warm-up |
-| **Pause / Resume** | Freezes the clock. Space bar also works |
+| **The progress bar** | Tap anywhere on it to pause or resume. It is also how far through the interval she is. Space bar works too |
 | **⏮ / ⏭** | Previous / next interval. ⏮ restarts the current one if you're more than 3s in. Arrow keys too |
 | **+15** | Adds 15 seconds to the interval on screen — handy on a rest that needs to be longer |
-| **Reset** | Back to the start. Nothing is recorded |
+| **X**, top left | Ends the workout and returns to the start. Nothing is recorded |
 
 **Settings** adjusts work / recover / water-break durations, and toggles the countdown beeps and
 the spoken cues independently. Changes are remembered.
@@ -51,7 +55,7 @@ no trace.
 ## Files
 
 ```
-index.html    markup: 3 screens, 2 panels, the video panel
+index.html    markup: 3 screens, 2 panels, the video stage
 styles.css    palette, layout, type scale, orientation handling
 config.js     stays blank — sync config lives on the device, not the repo
 app.js        data, timeline, timer, audio, wake lock, storage, sync
@@ -138,16 +142,22 @@ with retry. It runs identically with the wifi off.
   back doesn't leave the timer minutes behind.
 - **Fully offline.** Nothing is fetched at runtime. Once the page and clips are cached she can work
   out with the wifi off.
+- **Two colours carry the whole app.** Coral while she is working, a calm teal for warm-up,
+  recovery, the water break and cool-down. That one distinction is the only thing colour is asked
+  to encode, so it survives being glanced at from across the room. Coral also marks the primary
+  action on the start and finished screens.
+- **The pause glyph stays dark.** It sits mid-bar, so it spends the first half of each interval on
+  the pale track and the second half on the coloured fill. White reads at 1.26:1 against the track
+  — invisible. Dark measures 14.5:1, 4.9:1 and 3.2:1 across the three cases.
 - **Type is sized to be read from across the room**, not to fit the most on screen. The exercise
   cue lands at 25px on a phone — past iOS's "Large Text" setting — and the exercise name around
-  30px. Sizes are `clamp()`s whose *floor* is what applies on a phone, so the handset case is
+  26px. Sizes are `clamp()`s whose *floor* is what applies on a phone, so the handset case is
   fixed and predictable and only larger screens scale up.
-- **If you raise the type further, take the room from `.ring-wrap`** in `styles.css`. The countdown
-  is the one element on the workout screen with slack. Shrink `.seconds` by the same factor when
-  you do — its three terms are deliberately 75% of the ring's — or the digits stop fitting inside
-  the ring. Two smaller tiers, both keyed on height, already handle screens that cannot hold the
-  full scale: a 4"-class phone in portrait, and any phone in landscape.
-- **Overflow on the workout screen is silent.** `.info-area` has `min-height: 0`, so anything that
-  does not fit is clipped rather than scrolled. The clip shrinks to nothing first and then the cue
-  simply loses its last line, with nothing on screen to say so. After changing sizes or spacing
-  there, check the longest cue in the routine at 320×568 as well as at a modern phone size.
+- **The clip absorbs whatever the text does not use.** `.wo-info` is `flex: 0 0 auto` and `.wo-stage`
+  is `flex: 1 1 auto`, so raising the type takes room from the clip and nothing else — no other
+  element needs adjusting to compensate. Two smaller tiers, both keyed on height, handle screens
+  that cannot hold the full scale: a 4"-class phone in portrait, and any phone in landscape.
+- **Overflow on the workout screen is silent.** The stage has `min-height: 0`, so if the text block
+  ever outgrows the screen the clip shrinks to nothing first and then content is clipped rather
+  than scrolled, with nothing on screen to say so. After changing sizes or spacing there, check the
+  longest cue in the routine at 320×568 as well as at a modern phone size.
