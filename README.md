@@ -95,6 +95,11 @@ styles.css    palette, layout, type scale, orientation handling
 config.js     stays blank — sync config lives on the device, not the repo
 app.js        data, timeline, timer, audio, wake lock, storage, sync
 media/        14 square exercise clips, ~1.4MB total — see media/README.md
+
+apple-touch-icon.png, icon-192.png, icon-512.png, manifest.webmanifest
+              the home-screen icon. The tab icon is an inline SVG data URI in
+              index.html; these PNGs exist only because a home-screen icon
+              cannot be SVG. Full-bleed squares — iOS masks its own corners.
 ```
 
 The Apps Script source and its setup guide are kept outside this repo as local notes, so the

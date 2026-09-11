@@ -7,6 +7,33 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.4.0] — 2026-09-11
+
+### Added
+
+- **An icon.** A white heart on the app's coral, replacing the `data:,` placeholder that existed
+  only to suppress a 404.
+  - The tab icon is an inline SVG data URI — no request, no file, sharp at any size.
+  - `apple-touch-icon.png` (180) and `icon-192/512.png` exist because a home-screen icon cannot be
+    SVG: iOS ignores anything else, and the home screen is where this is actually launched from.
+    Without them iOS uses a screenshot of the page.
+  - `manifest.webmanifest` carries the name and the two PNGs so Android's "Add to Home screen" has
+    something to use.
+  - The PNGs are full-bleed squares while the tab icon is rounded, because iOS masks its own
+    corners and would round an already-rounded icon twice.
+
+### Notes
+
+- The PNGs are drawn from the parametric heart curve at 4× and downsampled, rather than rasterised
+  from the SVG: ImageMagick's own SVG renderer was adding a stray dark outline and sizing the shape
+  inconsistently. Checked legible at 16, 24, 32 and 48px.
+- **No launch behaviour changed.** The manifest deliberately omits `display`, and there is no
+  `apple-mobile-web-app-capable` meta, so the app still opens exactly as it did. Adding either
+  would make it launch without browser chrome — a real improvement given how much vertical space
+  this screen wants, but a different change from adding an icon.
+
+---
+
 ## [2.3.0] — 2026-09-11
 
 ### Added
