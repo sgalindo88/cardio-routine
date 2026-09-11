@@ -7,6 +7,86 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.4.0] — 2026-09-11
+
+The workout screen retuned for readability. It is used on a phone by someone in their sixties,
+propped up across the room, and the exercise descriptions were too small to follow along with.
+
+### Changed
+
+- **The exercise cue is 25px on a typical phone**, up from ~15px — past iOS's "Large Text" setting.
+  The exercise name went to ~30px from ~22px, the "Next up" line to ~18px from ~14px, and the
+  header's round label and time-left readout to ~17px and ~15px from ~13px and ~12px.
+- **The countdown shrank by a quarter to pay for it.** The ring was sized at up to 46vh / 72vw and
+  is now 27vh / 46vw — 242px down to 179px on a typical phone. `.seconds` came down by the same
+  factor (`min(16vh,24vw,5.25rem)`, each term 75% of the ring's) so the number keeps its proportion
+  inside the ring instead of growing to fill it. **Change the two together**, or the digits stop
+  fitting: at 179px the ring's inner clearance is 147px and "45" is 106px wide.
+- **More air between the stacked components**, which at these sizes were reading as one block:
+  `.info-area` 6px → 14px, `.wo-body` 10px → 20px, and a few px more under the header and above
+  the controls. Net of the ring's donation, the clip still came out slightly larger than in 1.3.1.
+- Settings and History text came up too, since the same person is reading it: row labels to 19px,
+  their hints to 16px from 13px, history rows to 18px, panel notes and the sync fields to ~17px.
+- The steppers in Settings drop from 56px to 48px taps so the larger row labels keep their width —
+  "marching between moves" was breaking onto three lines. Still above the 44px touch minimum, and
+  these are not buttons pressed mid-exercise.
+- `.wo-head` may now wrap, and the round label's letter-spacing tightened from `.10em` to `.05em`.
+  At the larger size "COOL-DOWN · 6 OF 6" plus the clock no longer fits one line on a 320px screen;
+  the tighter tracking makes it fit, and the wrap is the fallback if it ever doesn't.
+
+### Added
+
+- **Two reduced type tiers for screens that cannot hold the full one**, both keyed on height, which
+  is the axis that actually binds:
+  - `(orientation: portrait) and (max-height: 700px)` — a 4"-class phone. Cue 20px, name 24px,
+    tighter gaps, ring down to `min(23vh,40vw,170px)`.
+  - `(orientation: landscape) and (max-height: 500px)` — a phone held sideways, which has the same
+    ~390px of height. Same type step-down; a tablet in landscape still gets the full scale.
+
+### Fixed
+
+- **Some exercises lost their demonstration clip for the rest of the session** — the gap closed up
+  and the text re-centred, as if that segment had never had one. `clipFailed` is the only thing
+  that can do that, it is written in exactly one place, and it was blaming the wrong file: the
+  handler read `clipSrc`, meaning "the last src we set", but an `error` event can arrive after the
+  next segment has already swapped it. A slow or failed load therefore marked the *incoming* clip
+  dead. Three changes:
+  - Blame `currentSrc`, the file the element was actually on.
+  - Only `MEDIA_ERR_SRC_NOT_SUPPORTED` is permanent. An aborted load is just a segment change, and
+    a network or decode error is worth retrying the next time that exercise comes round — which it
+    does twice a session.
+  - `start()` clears the map, so one bad load no longer leaves an exercise blank for every
+    subsequent workout until the tab is closed.
+- **The cue lost its last line on a 320×568 screen.** `.info-area` has `min-height: 0`, so what
+  does not fit is clipped outright rather than scrolled — the clip shrinks to nothing first and
+  then the text is simply cut, with nothing on screen to say so. The portrait tier above is the
+  fix. Worth knowing about when editing this screen: overflow here is silent.
+- **The four controls needed 348px and a 375px phone offers 347**, so they wrapped to a second row
+  and spent 72px of height on it. Below 380px the round buttons are now 48px and the bar stays on
+  one row — the vertical space is worth more than 8px of button diameter, since it is what keeps
+  the clip full-size under the larger text. Pre-existing, but the larger type made it expensive.
+- The sync fields were `.95rem` (15.2px), just under the 16px threshold at which iOS zooms the page
+  in when a text field takes focus. They are 16.8px now, so focusing one no longer forces a pinch
+  back out.
+- `.ex-cue` capped its width at `34ch` with no upper bound. At the new size that is wider than a
+  narrow phone's text column, so it is `min(34ch, 100%)` now.
+
+### Notes
+
+- The clip regression above was reported against "Arm Raises — Forward and Up" and "Cross-Body Knee
+  Taps" specifically. Both were red herrings: all fourteen files are present, faststart, and
+  byte-identical in encoding (H.264 Main, level 3.1, yuv420p, 30fps, video-only), every first frame
+  has her in shot, and all 26 clip-bearing segments render at eight real phone viewports with the
+  smallest clip still 137px. Nothing about those two files differs — they were simply whichever
+  clip happened to be loading when an earlier one reported its error.
+- Verified against the routine's longest cue ("Step right, tap the left toe in…") at 390×844,
+  375×812 and 320×568 portrait and 844×390 landscape: no overflow in either axis, nothing clipped
+  inside `.info-area`, and the clip visible at a usable size in all four.
+- Sizes are written as `clamp()` with a floor that wins on phone-sized screens, so the phone case
+  is fixed and predictable while larger screens can still scale up.
+
+---
+
 ## [1.3.1] — 2026-09-07
 
 ### Changed

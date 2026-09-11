@@ -749,6 +749,10 @@
 
   function start() {
     initAudio();
+    /* Retry every clip. A file marked unplayable stays that way for the life
+       of the page otherwise, so one bad load would leave that exercise blank
+       for every session until the tab is closed. */
+    clipFailed = {};
     state.timeline = buildTimeline(settings);
     state.idx = 0;
     state.running = true;
@@ -1165,11 +1169,29 @@
   el.ringFill.style.strokeDasharray = RING_C.toFixed(1);
 
   /* A missing or unplayable clip collapses the panel for that segment
-     instead of showing a broken element. */
+     instead of showing a broken element.
+
+     Two things matter here, because `clipFailed` is the only thing in the app
+     that can make a mapped clip disappear, and it is never cleared:
+
+     1. Blame the file that actually failed. This read `clipSrc`, which is
+        "the last src we set" — but an error can arrive after the next segment
+        has already swapped it, so a slow or failed load would mark the
+        *incoming* clip dead and that exercise would show nothing for the rest
+        of the session. `currentSrc` is the file the element was really on.
+     2. Only a genuinely unplayable file earns a permanent mark.
+        MEDIA_ERR_ABORTED is what a src swap mid-load reports — a normal
+        segment change, not a broken clip. A network or decode error is worth
+        retrying the next time that exercise comes round, which it does twice
+        a session. Only SRC_NOT_SUPPORTED (a missing or unreadable file) is
+        treated as permanent. */
   if (el.video) {
     el.video.addEventListener('error', function () {
-      var f = clipSrc && clipSrc.replace(CLIP_DIR, '');
-      if (f) clipFailed[f] = true;
+      var v = el.video;
+      var url = v.currentSrc || v.getAttribute('src') || clipSrc || '';
+      var f = url.split('/').pop();
+      var code = v.error && v.error.code;
+      if (f && code === 4) clipFailed[f] = true;   // MEDIA_ERR_SRC_NOT_SUPPORTED
       refreshVisual();
     }, true);
   }

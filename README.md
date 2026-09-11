@@ -52,7 +52,7 @@ no trace.
 
 ```
 index.html    markup: 3 screens, 2 panels, the video panel
-styles.css    palette, layout, orientation handling
+styles.css    palette, layout, type scale, orientation handling
 config.js     stays blank — sync config lives on the device, not the repo
 app.js        data, timeline, timer, audio, wake lock, storage, sync
 media/        14 square exercise clips, ~1.4MB total — see media/README.md
@@ -84,6 +84,13 @@ var CLIPS = { 'half-jacks': 'half-jacks.mp4', ... };
 
 To swap a clip, drop a new file in `media/` and point the entry at it. A file that is missing or
 will not play collapses that segment's panel rather than showing a broken element.
+
+**If an exercise shows no clip and the gap closes up**, the app has marked that file unplayable.
+`clipFailed` in `app.js` is the only thing that does this and it is written in exactly one place —
+the video element's `error` handler. That handler must identify the failed file by `currentSrc`,
+not by the app's own `clipSrc`: an error can arrive after the next segment has swapped the src, and
+blaming `clipSrc` kills the *incoming* clip instead. Only `MEDIA_ERR_SRC_NOT_SUPPORTED` is treated
+as permanent, and `start()` clears the map so a bad load does not outlive the session.
 
 **These replaced a YouTube embed**, and with it every problem that came from running someone else's
 player: ads that could interrupt mid-exercise, branding and title overlays, captions burning
@@ -131,3 +138,16 @@ with retry. It runs identically with the wifi off.
   back doesn't leave the timer minutes behind.
 - **Fully offline.** Nothing is fetched at runtime. Once the page and clips are cached she can work
   out with the wifi off.
+- **Type is sized to be read from across the room**, not to fit the most on screen. The exercise
+  cue lands at 25px on a phone — past iOS's "Large Text" setting — and the exercise name around
+  30px. Sizes are `clamp()`s whose *floor* is what applies on a phone, so the handset case is
+  fixed and predictable and only larger screens scale up.
+- **If you raise the type further, take the room from `.ring-wrap`** in `styles.css`. The countdown
+  is the one element on the workout screen with slack. Shrink `.seconds` by the same factor when
+  you do — its three terms are deliberately 75% of the ring's — or the digits stop fitting inside
+  the ring. Two smaller tiers, both keyed on height, already handle screens that cannot hold the
+  full scale: a 4"-class phone in portrait, and any phone in landscape.
+- **Overflow on the workout screen is silent.** `.info-area` has `min-height: 0`, so anything that
+  does not fit is clipped rather than scrolled. The clip shrinks to nothing first and then the cue
+  simply loses its last line, with nothing on screen to say so. After changing sizes or spacing
+  there, check the longest cue in the routine at 320×568 as well as at a modern phone size.

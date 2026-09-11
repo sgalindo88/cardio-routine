@@ -105,26 +105,35 @@ body{
 /* ---------- workout: head ---------- */
 .wo-head{
   display:flex; align-items:baseline; justify-content:space-between;
-  gap:12px; flex:0 0 auto; padding:2px 4px 6px;
+  gap:12px; flex:0 0 auto; padding:2px 4px 10px;
+  /* Both lines are readable-sized now, so on a narrow phone they may not fit
+     side by side. Let the clock drop to its own line rather than squeeze. */
+  flex-wrap:wrap;
 }
 .wo-label{
   margin:0; font-weight:800; color:var(--state);
-  letter-spacing:.10em; text-transform:uppercase;
-  font-size:clamp(.78rem,2.3vmin,1.05rem);
+  /* Tighter tracking than the usual uppercase label: at this size the extra
+     letter-spacing is what pushes "Cool-down · 6 of 6" past a narrow screen. */
+  letter-spacing:.05em; text-transform:uppercase;
+  font-size:clamp(1.05rem,4.2vmin,1.3rem);
 }
-.wo-total{ margin:0; color:var(--muted); font-size:clamp(.72rem,2vmin,.95rem); font-variant-numeric:tabular-nums; }
+.wo-total{ margin:0; color:var(--muted); font-size:clamp(.95rem,3.8vmin,1.15rem); font-variant-numeric:tabular-nums; }
 
 /* ---------- workout: body ---------- */
 .wo-body{
   flex:1 1 auto; min-height:0;
   display:grid; grid-template-rows:auto minmax(0,1fr);
-  gap:10px; align-content:center; justify-items:center;
+  gap:20px; align-content:center; justify-items:center;
 }
 
 .ring-area{ display:grid; place-items:center; min-height:0; }
 .ring-wrap{
   position:relative;
-  width:min(46vh,72vw,330px); aspect-ratio:1;
+  /* Deliberately smaller than the room available: the space this gives up is
+     what pays for the larger exercise name and cue underneath, and for the
+     breathing room between them. Shrink `.seconds` by the same factor if you
+     change this, or the number stops fitting inside the ring. */
+  width:min(27vh,46vw,200px); aspect-ratio:1;
 }
 .ring{ width:100%; height:100%; transform:rotate(-90deg); }
 .ring-track{ fill:var(--state-wash); stroke:var(--line); stroke-width:12; }
@@ -137,7 +146,9 @@ body{
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
 }
 .seconds{
-  font-size:min(21vh,32vw,7rem); font-weight:800; line-height:.95;
+  /* Each term is 75% of the ring's, so the number keeps its proportion inside
+     the ring rather than growing to fill it. */
+  font-size:min(16vh,24vw,5.25rem); font-weight:800; line-height:.95;
   font-variant-numeric:tabular-nums; letter-spacing:-.03em;
 }
 .kind-tag{
@@ -147,19 +158,26 @@ body{
 
 .info-area{
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:6px; text-align:center; width:100%; min-height:0; max-width:640px;
+  /* Name, cue, clip and "Next up" are four separate things stacked in one
+     column; at these type sizes 6px read as one crowded block. */
+  gap:14px; text-align:center; width:100%; min-height:0; max-width:640px;
 }
 .ex-name{
   margin:0; font-weight:800; letter-spacing:-.015em; line-height:1.1;
-  font-size:clamp(1.35rem,4.6vmin,2.6rem);
+  font-size:clamp(1.85rem,7.4vmin,2.8rem);
 }
 .ex-cue{
   margin:0; color:var(--muted); line-height:1.35;
-  font-size:clamp(.92rem,2.5vmin,1.3rem); max-width:34ch;
+  /* Read at arm's length from a propped-up phone mid-exercise: 25px on a
+     typical handset, past iOS "Large Text". The floor, not the vmin term, is
+     what usually applies on a phone — that is intentional. */
+  font-size:clamp(1.5625rem,6.4vmin,1.95rem);
+  /* 34ch of text at this size overflows a narrow phone; cap at the column. */
+  max-width:min(34ch,100%);
 }
 .next-up{
   margin:0; font-weight:700; color:var(--state);
-  font-size:clamp(.85rem,2.3vmin,1.15rem);
+  font-size:clamp(1.15rem,4.6vmin,1.45rem);
 }
 
 .media-box{
@@ -172,7 +190,7 @@ body{
 .controls{
   flex:0 0 auto;
   display:flex; align-items:center; justify-content:center;
-  gap:10px; padding-top:8px; flex-wrap:wrap;
+  gap:10px; padding-top:14px; flex-wrap:wrap;
 }
 .controls-sub{ flex:0 0 auto; display:flex; justify-content:center; }
 
@@ -183,10 +201,51 @@ body{
     grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);
     gap:20px; align-items:center;
   }
-  .ring-wrap{ width:min(60vh,42vw,380px); }
-  .seconds{ font-size:min(26vh,17vw,7.5rem); }
+  .ring-wrap{ width:min(39vh,27vw,240px); }
+  .seconds{ font-size:min(19.5vh,12.75vw,5.6rem); }
   .info-area{ justify-content:center; height:100%; }
-  .ex-cue{ max-width:30ch; }
+  .ex-cue{ max-width:min(30ch,100%); }
+}
+
+/* ---------- short / narrow portrait ----------
+   A 4"-class phone (320x568) cannot hold the full type scale, the clip and a
+   control bar that has wrapped onto two rows. `.info-area` has `min-height:0`,
+   so whatever does not fit is clipped outright rather than scrolled — the cue
+   loses its last line with nothing on screen to say so. Step the workout
+   screen down a tier there instead. Scoped to portrait: the landscape block
+   above sets its own ring size and would otherwise be overridden by this. */
+@media (orientation:portrait) and (max-height:700px){
+  .wo-body{ gap:12px; }
+  .info-area{ gap:8px; }
+  .ring-wrap{ width:min(23vh,40vw,170px); }
+  .seconds{ font-size:min(13.5vh,21vw,4.5rem); }
+  .ex-name{ font-size:clamp(1.5rem,6vmin,2rem); }
+  .ex-cue{ font-size:clamp(1.25rem,5vmin,1.5rem); }
+  .next-up{ font-size:clamp(1rem,4vmin,1.2rem); }
+  .controls{ padding-top:8px; }
+}
+
+/* The four controls need 348px and a 375px phone offers 347, so they wrap to a
+   second row and cost 72px of the height the cue needs. Trim the round buttons
+   below 380px — 48px still clears the 44px touch minimum — so the bar stays on
+   one row. The vertical space is worth more here than 8px of button diameter:
+   it is what keeps the clip full-size under the larger text. */
+@media (orientation:portrait) and (max-width:380px){
+  .controls{ gap:8px; flex-wrap:nowrap; }
+  .controls .btn-round{ min-width:48px; width:48px; height:48px; }
+  .btn-wide{ min-width:110px; }
+}
+
+/* A phone held sideways has the same problem as a short one held upright —
+   about 390px of height for everything — except the clip absorbs the squeeze
+   instead of the cue, shrinking to a thumbnail. Step the same tier down here.
+   Keyed on height, so a tablet in landscape keeps the full scale. */
+@media (orientation:landscape) and (max-height:500px){
+  .info-area{ gap:8px; }
+  .ex-name{ font-size:clamp(1.5rem,6vmin,2rem); }
+  .ex-cue{ font-size:clamp(1.25rem,5vmin,1.5rem); max-width:none; }
+  .next-up{ font-size:clamp(1rem,4vmin,1.2rem); }
+  .controls{ padding-top:8px; }
 }
 
 /* ---------- panels ---------- */
@@ -199,20 +258,31 @@ body{
 .panel-inner{ max-width:560px; margin:0 auto; display:flex; flex-direction:column; gap:6px; }
 .panel-head{ display:flex; align-items:center; justify-content:space-between; padding:4px 0 10px; }
 .panel-title{ margin:0; font-size:clamp(1.4rem,4.5vmin,2rem); font-weight:800; }
-.panel-note{ color:var(--muted); font-size:.95rem; margin:10px 2px; }
+.panel-note{ color:var(--muted); font-size:1.05rem; margin:10px 2px; }
 
 .setting{
   display:flex; align-items:center; justify-content:space-between; gap:14px;
   background:var(--surface); border:1px solid var(--line);
   border-radius:var(--r); padding:12px 14px;
 }
-.setting-label{ font-weight:700; font-size:1.05rem; display:flex; flex-direction:column; gap:2px; }
-.setting-hint{ font-weight:500; font-size:.82rem; color:var(--muted); }
-.stepper{ display:flex; align-items:center; gap:8px; }
+.setting-label{
+  font-weight:700; font-size:1.2rem; display:flex; flex-direction:column; gap:2px;
+  flex:1 1 auto; min-width:0;
+}
+.setting-hint{ font-weight:500; font-size:1rem; color:var(--muted); }
+.stepper{ display:flex; align-items:center; gap:6px; flex:0 0 auto; }
+
 .stepper-val{
   min-width:64px; text-align:center; font-weight:800;
-  font-size:1.15rem; font-variant-numeric:tabular-nums;
+  font-size:1.3rem; font-variant-numeric:tabular-nums;
 }
+
+/* A settings row puts a three-part stepper beside the label. At the larger
+   label size the full 56px taps leave the hint so little width that it breaks
+   onto three lines, so trim the stepper here only — 48px still clears the 44px
+   touch-target minimum, and these are not buttons pressed mid-exercise. */
+.setting .btn-round{ min-width:48px; width:48px; height:48px; }
+.setting .stepper-val{ min-width:52px; }
 
 .toggle{
   width:68px; height:38px; border-radius:19px; flex:0 0 auto;
@@ -230,7 +300,7 @@ body{
 .toggle:focus-visible{ outline:3px solid var(--state); outline-offset:3px; }
 
 .sync-line{
-  margin:14px 2px 0; font-size:.85rem; color:var(--muted);
+  margin:14px 2px 0; font-size:1rem; color:var(--muted);
   border-top:1px solid var(--line); padding-top:12px;
 }
 
@@ -238,7 +308,7 @@ body{
 .hist-list li{
   background:var(--surface); border:1px solid var(--line); border-radius:12px;
   padding:11px 14px; display:flex; justify-content:space-between; gap:10px;
-  font-size:1rem;
+  font-size:1.15rem;
 }
 .hist-list .hist-dur{ color:var(--muted); font-variant-numeric:tabular-nums; }
 .hist-empty{ color:var(--muted); text-align:center; padding:30px 10px; }
@@ -253,7 +323,7 @@ body{
 }
 .sync-summary{
   cursor:pointer; font-weight:700; color:var(--muted);
-  font-size:.95rem; padding:8px 2px; list-style:none;
+  font-size:1.05rem; padding:8px 2px; list-style:none;
 }
 .sync-summary::-webkit-details-marker{ display:none; }
 .sync-summary::before{ content:'▸ '; }
@@ -262,9 +332,11 @@ body{
 
 .sync-fields{ display:flex; flex-direction:column; gap:10px; padding:6px 2px 0; }
 .fld{ display:flex; flex-direction:column; gap:4px; }
-.fld-label{ font-size:.82rem; font-weight:700; color:var(--muted); }
+.fld-label{ font-size:.95rem; font-weight:700; color:var(--muted); }
 .fld input{
-  font:inherit; font-size:.95rem;
+  /* Must stay at or above 16px: iOS zooms the whole page in when a smaller
+     field takes focus, and the user then has to pinch back out. */
+  font:inherit; font-size:1.05rem;
   padding:11px 12px; border:1px solid var(--line); border-radius:12px;
   background:var(--surface); color:var(--text); width:100%;
 }
@@ -272,11 +344,11 @@ body{
 
 .sync-actions{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
 .btn-small{
-  min-height:44px; padding:0 16px; font-size:.92rem;
+  min-height:44px; padding:0 16px; font-size:1rem;
   border-color:var(--line);
 }
 .sync-msg{
-  margin:2px 0 0; font-size:.88rem; font-weight:600;
+  margin:2px 0 0; font-size:1rem; font-weight:600;
   padding:9px 12px; border-radius:10px;
 }
 .sync-msg.ok  { color:#2F5D3F; background:rgba(79,112,67,.12); }
